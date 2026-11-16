@@ -1,0 +1,62 @@
+HINDUSTAN ELECTRICAL - SHOP APP
+================================
+
+This folder is the whole app. It works like an Android app: it has its own icon,
+opens full-screen, and keeps working with NO internet.
+
+To put it on your shop phones you do two things:
+  PART 1: put this folder on a free website (one time, on a computer or phone browser)
+  PART 2: open that website on each shop phone and tap "Install"
+
+
+PART 1 - PUT THE FOLDER ON A FREE WEBSITE (one time)
+-----------------------------------------------------
+Android only lets a web app install from a secure web address (https://...),
+so the folder must be uploaded once. Any one of these free hosts works:
+
+  Netlify       - make a free account, use "Add new site" > "Deploy manually",
+                  and drag this whole folder onto the page.
+  Cloudflare Pages - free account > Workers & Pages > Create > Pages >
+                  "Upload assets", then upload this folder.
+  GitHub Pages  - free account, make a new repository, upload every file in this
+                  folder, then Settings > Pages > deploy from the main branch.
+
+(Host screens change from time to time. If a button has moved, search for
+"<host name> upload a static site".)
+
+When it finishes, the host gives you an address like https://something.netlify.app
+Write that address down. This is your app's address.
+
+IMPORTANT: always use the SAME address. Your shop data is saved against the address,
+so a different address opens an empty copy.
+
+
+PART 2 - INSTALL ON EACH SHOP PHONE
+------------------------------------
+1. Open Chrome on the phone and go to your app's address.
+2. Tap the three dots at the top right.
+3. Tap "Install app" (some phones say "Add to Home screen").
+4. Tap Install. The lightning-bolt icon appears with your other apps.
+5. Open it from the icon. After the first open it works without internet.
+
+
+THINGS TO KNOW
+--------------
+* Each phone keeps its OWN stock, sales and bills. Phones do not sync with each other.
+  Use ONE phone as the main billing phone.
+* BACK UP: at the bottom of the app, tap "Back up data" often. It saves a file you
+  can keep in WhatsApp, Google Drive or email. "Restore backup" loads it again, on
+  the same phone or a new one.
+* Clearing Chrome's data, or uninstalling the app, ERASES the shop data. Back up first.
+* First use: the app starts with example products, sales and purchases. Tap
+  "Clear all data" at the bottom (it asks twice) and then add your real products
+  on the Inventory tab. Add your address, phone and GSTIN under "Shop details" so
+  they print on every bill.
+* Bills: after saving a bill you can print it (the Print button opens the phone's
+  print window, where you can also choose Save as PDF), download it as a page, or
+  tap "Copy for WhatsApp" and paste it to the customer.
+* Updating the app later: replace the files on your website with new ones. Phones
+  pick up the new version the next time they open the app with internet on.
+* Do not rename or edit the files inside this folder.
+
+This is not on the Google Play Store. It does not need a Play Store account.

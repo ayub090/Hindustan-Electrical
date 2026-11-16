@@ -1,0 +1,2039 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0F2A47">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Hindustan">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Hindustan Electrical</title>
+<style>
+/* Layout: one-column dashboard on a blueprint-grid ground. Brand header, tabs, then summary tiles, forms and tables per tab. */
+:root {
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --bg: #E6EDF5;
+  --grid: rgba(20, 70, 120, 0.075);
+  --brand: #0F2A47;
+  --bolt: #F5B301;
+  --surface: #FFFFFF;
+  --surface-2: #F1F6FB;
+  --line: #CFDAE6;
+  --fg: #15202B;
+  --muted: #566472;
+  --accent: #0E6E6B;
+  --accent-fg: #FFFFFF;
+  --accent-soft: #DFF0EF;
+  --badge-bg: #D92D20;
+  --badge-fg: #FFFFFF;
+  --danger: #B42318;
+  --danger-soft: #FDECEA;
+  --ok: #1A7F4B;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A111B;
+    --grid: rgba(120, 170, 230, 0.06);
+    --brand: #16365C;
+    --surface: #121B27;
+    --surface-2: #182331;
+    --line: #263446;
+    --fg: #E6EBEF;
+    --muted: #93A0AB;
+    --accent: #3FBFB8;
+    --accent-fg: #04201F;
+    --accent-soft: #143331;
+    --badge-bg: #F97066;
+    --badge-fg: #2A0B08;
+    --danger: #FF9188;
+    --danger-soft: #3A1816;
+    --ok: #5CCB92;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A111B;
+  --grid: rgba(120, 170, 230, 0.06);
+  --brand: #16365C;
+  --surface: #121B27;
+  --surface-2: #182331;
+  --line: #263446;
+  --fg: #E6EBEF;
+  --muted: #93A0AB;
+  --accent: #3FBFB8;
+  --accent-fg: #04201F;
+  --accent-soft: #143331;
+  --badge-bg: #F97066;
+  --badge-fg: #2A0B08;
+  --danger: #FF9188;
+  --danger-soft: #3A1816;
+  --ok: #5CCB92;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background-color: var(--bg);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 32px 32px;
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 24px 48px;
+}
+.wrap { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+
+/* Header */
+.top { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+h1 { margin: 0; font-size: 1.7rem; font-weight: 600; letter-spacing: -0.015em; text-wrap: balance; }
+.sub { margin: 4px 0 0; color: var(--muted); font-size: 0.9rem; max-width: 60ch; }
+.top-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.status { display: inline-flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--muted); }
+.status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.status[data-state="saved"]::before { background: var(--ok); }
+.status[data-state="problem"]::before { background: var(--danger); }
+
+/* Buttons and fields */
+button { font: inherit; color: inherit; }
+.btn {
+  height: 38px; padding: 0 16px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--surface); color: var(--fg); font-weight: 500; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap;
+}
+.btn:hover { background: var(--surface-2); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.btn.primary:hover { filter: brightness(1.07); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+label { display: block; font-size: 0.78rem; font-weight: 500; color: var(--muted); margin-bottom: 4px; }
+input, select {
+  width: 100%; height: 38px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--surface); color: var(--fg); font: inherit; min-width: 0;
+}
+input::placeholder { color: var(--muted); opacity: 0.8; }
+
+/* Summary tiles */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; min-width: 0; }
+.tile .k { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 500; }
+.tile .v { margin-top: 4px; font-size: 1.65rem; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.tile.alert .v { color: var(--danger); }
+
+/* Cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.card-pad { padding: 16px; }
+h2 { margin: 0 0 12px; font-size: 1rem; font-weight: 600; }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+
+/* Add-item form */
+.fgrid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); align-items: end; }
+.fgrid .f-name, .fgrid .f-submit { grid-column: 1 / -1; }
+@media (min-width: 900px) {
+  .fgrid { grid-template-columns: 2fr 1.2fr 1.3fr 0.9fr 0.9fr 1fr auto; }
+  .fgrid .f-name, .fgrid .f-submit { grid-column: auto; }
+}
+.form-msg { min-height: 1.2em; margin: 8px 0 0; font-size: 0.85rem; color: var(--danger); }
+
+/* Table toolbar */
+.toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.toolbar .search { flex: 1 1 220px; min-width: 0; }
+.toolbar .cat { flex: 0 1 200px; }
+.chip {
+  height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  cursor: pointer; font-size: 0.88rem; font-weight: 500; white-space: nowrap;
+}
+.chip[aria-pressed="true"] { background: var(--badge-bg); border-color: var(--badge-bg); color: var(--badge-fg); }
+.count { margin-left: auto; font-size: 0.84rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* Table */
+.tablewrap { overflow-x: auto; position: relative; }
+table { width: 100%; min-width: 800px; border-collapse: collapse; }
+th {
+  text-align: left; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+  color: var(--muted); background: var(--surface-2); padding: 10px 16px; border-bottom: 1px solid var(--line); white-space: nowrap;
+}
+td { padding: 11px 16px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:hover td { background: var(--surface-2); }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+.ctr { text-align: center; }
+.sort { background: none; border: 0; padding: 0; cursor: pointer; font: inherit; text-transform: inherit; letter-spacing: inherit; color: inherit; }
+.sort:hover { color: var(--fg); }
+th[aria-sort="ascending"] .sort::after { content: " \2191"; }
+th[aria-sort="descending"] .sort::after { content: " \2193"; }
+th[aria-sort] .sort { color: var(--fg); }
+.pname { font-weight: 500; }
+.sku { font-family: var(--font-mono); font-size: 0.84rem; color: var(--muted); }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--line); font-size: 0.82rem; }
+.badge {
+  display: inline-block; margin-left: 8px; padding: 2px 9px; border-radius: 999px; white-space: nowrap;
+  background: var(--badge-bg); color: var(--badge-fg); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
+  vertical-align: 1px;
+}
+.stepper { display: inline-flex; align-items: center; gap: 6px; }
+.step {
+  width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface);
+  font-size: 1.1rem; line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+}
+.step:hover:not(:disabled) { background: var(--accent-soft); border-color: var(--accent); }
+.step:disabled { opacity: 0.35; cursor: not-allowed; }
+.qty { min-width: 3.4ch; text-align: center; font-weight: 600; font-variant-numeric: tabular-nums; }
+.qty.low { color: var(--danger); }
+.act { text-align: right; white-space: nowrap; }
+.rm { background: none; border: 0; cursor: pointer; color: var(--muted); padding: 6px 8px; border-radius: 6px; font-size: 0.84rem; }
+.rm:hover:not(:disabled) { color: var(--danger); background: var(--danger-soft); }
+.rm.confirm { color: var(--danger); font-weight: 600; background: var(--danger-soft); }
+.rm:disabled { opacity: 0.35; cursor: not-allowed; }
+.empty { text-align: center; padding: 40px 16px; color: var(--muted); }
+.empty .btn { margin-top: 12px; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Tabs and sales */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); }
+.tab { background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; padding: 10px 18px; font-weight: 500; color: var(--muted); cursor: pointer; }
+.tab:hover { color: var(--fg); }
+.tab[aria-current="page"] { color: var(--fg); border-bottom-color: var(--accent); }
+.muted { color: var(--muted); }
+@media (min-width: 900px) { .fgrid.sale { grid-template-columns: 2.4fr 0.8fr 1fr 1.1fr 1.5fr auto; } }
+
+/* Brand header */
+.brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.mark { display: inline-flex; width: 46px; height: 46px; border-radius: 10px; background: var(--brand); color: var(--bolt); align-items: center; justify-content: center; flex: none; }
+.brand h1 { overflow-wrap: anywhere; }
+.top-actions .btn { height: 36px; }
+
+/* Bill maker */
+.sub-h { margin: 18px 0 8px; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.fgrid .full { grid-column: 1 / -1; }
+.fgrid.addln > :first-child { grid-column: 1 / -1; }
+@media (min-width: 900px) {
+  .fgrid.cust { grid-template-columns: 2fr 1.3fr 1fr 1.2fr; }
+  .fgrid.addln { grid-template-columns: 3fr 0.8fr 1fr auto; }
+  .fgrid.addln > :first-child { grid-column: auto; }
+  .fgrid.adj { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 460px; }
+}
+.lines-wrap { margin: 12px 0; border: 1px solid var(--line); border-radius: 8px; }
+table.lines, table.bills { min-width: 560px; }
+.tablewrap table.is-empty { min-width: 0; }
+.billbox { display: grid; gap: 16px; grid-template-columns: 1fr; margin-top: 4px; }
+@media (min-width: 900px) { .billbox { grid-template-columns: 1fr 340px; align-items: start; } }
+.totals { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; background: var(--surface-2); }
+.trow { display: flex; justify-content: space-between; gap: 12px; font-variant-numeric: tabular-nums; }
+.trow.grand { font-size: 1.2rem; font-weight: 600; border-top: 1px solid var(--line); padding-top: 8px; }
+.bill-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.toolbar h2 { margin: 0; }
+.linkbtn { background: none; border: 0; padding: 0; cursor: pointer; color: var(--accent); font-family: var(--font-mono); font-size: 0.84rem; text-decoration: underline; text-underline-offset: 3px; }
+.linkbtn:hover { filter: brightness(1.2); }
+
+/* Dialogs */
+.modal-open { overflow: hidden; }
+.modal-back {
+  position: fixed; inset: 0; z-index: 30; background: rgba(6, 12, 20, 0.6); display: flex; align-items: flex-start; justify-content: center; overflow-y: auto;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.modal {
+  background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: 12px; width: 100%; max-width: 520px; margin: auto;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.4); padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0;
+}
+.modal.wide { max-width: 860px; }
+.modal:focus { outline: none; }
+.modal-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.modal-bar h2 { margin: 0; }
+.modal-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.modal p { margin: 0; }
+.shop-grid { display: grid; gap: 12px; }
+.copybox { width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); color: var(--fg); font: 0.85rem/1.4 var(--font-mono); resize: vertical; }
+.sheetwrap { overflow-x: auto; }
+
+@media print {
+  body { background: #fff !important; padding: 0 !important; }
+  .wrap, .toast, .no-print { display: none !important; }
+  .modal-back { position: static !important; background: none !important; padding: 0 !important; overflow: visible !important; display: block !important; }
+  .modal { border: 0 !important; box-shadow: none !important; padding: 0 !important; max-width: none !important; background: #fff !important; }
+  .sheetwrap { overflow: visible !important; }
+}
+
+/* Toast */
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 8px; font-size: 0.88rem;
+  max-width: calc(100% - 32px); z-index: 40; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+.foot { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; font-size: 0.85rem; }
+.foot p { margin: 0; }
+.foot-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+@media print { .foot { display: none !important; } }
+
+html { color-scheme: light; }
+body { margin: 0; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<style id="billCss">
+.bl{background:#fff;color:#111827;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px;line-height:1.45;padding:24px;border:1px solid #d1d5db;border-radius:6px;min-width:480px}
+.bl *{box-sizing:border-box}
+.bl-head{display:flex;justify-content:space-between;gap:24px;border-bottom:2px solid #111827;padding-bottom:12px}
+.bl-shop{font-size:22px;font-weight:700;letter-spacing:-.01em}
+.bl-sub{color:#4b5563;font-size:13px}
+.bl-meta{text-align:right;white-space:nowrap}
+.bl-title{font-weight:700;letter-spacing:.16em;font-size:12px;color:#4b5563}
+.bl-to{padding:12px 0;display:flex;flex-direction:column;gap:2px}
+.bl-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#6b7280}
+.bl .bl-table{width:100%;min-width:0;border-collapse:collapse}
+.bl .bl-table th{background:#f3f4f6;color:#374151;padding:8px 10px;border-bottom:1px solid #d1d5db;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.bl .bl-table td{padding:8px 10px;border-bottom:1px solid #e5e7eb;vertical-align:top;background:transparent}
+.bl .bl-table tbody tr:hover td{background:transparent}
+.bl .bl-table tbody tr:last-child td{border-bottom:1px solid #e5e7eb}
+.bl .bl-table .r{text-align:right;font-variant-numeric:tabular-nums}
+.bl-sku{color:#6b7280;font-size:12px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.bl-totals{margin-left:auto;width:min(100%,300px);margin-top:12px}
+.bl-row{display:flex;justify-content:space-between;gap:16px;padding:3px 0;font-variant-numeric:tabular-nums}
+.bl-row.g{border-top:2px solid #111827;margin-top:4px;padding-top:6px;font-size:16px;font-weight:700}
+.bl-words{margin-top:12px;font-size:13px;color:#374151}
+.bl-foot{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-top:32px;font-size:13px;color:#4b5563}
+.bl-sign{text-align:center;border-top:1px solid #9ca3af;padding-top:4px;min-width:200px}
+@media (max-width:560px){
+.bl{min-width:0;padding:16px 14px}
+.bl-head{flex-direction:column;gap:10px}
+.bl-meta{text-align:left}
+.bl-shop{font-size:19px}
+.bl .bl-table th,.bl .bl-table td{padding:6px 5px}
+.bl-foot{flex-direction:column;align-items:stretch;gap:20px}
+.bl-sign{min-width:0}
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" focusable="false"><path d="M13.5 2 5 13.5h5.5L9.5 22 19 9.5h-5.8L13.5 2z" fill="currentColor"/></svg></span>
+      <div>
+        <h1 id="shopName">Hindustan Electrical</h1>
+        <p class="sub">Amounts in &#8377;. A product shows Low Stock when its stock falls below its reorder level.</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <span class="status" id="status" data-state="idle">Connecting&hellip;</span>
+      <button class="btn" id="shopBtn" type="button">Shop details</button>
+      <button class="btn" id="exportBtn" type="button">Export CSV</button>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="Sections">
+    <button class="tab" type="button" data-go="inventory" aria-current="page">Inventory</button>
+    <button class="tab" type="button" data-go="sales">Sales</button>
+    <button class="tab" type="button" data-go="purchases">Purchases</button>
+  </nav>
+
+  <section class="tiles" data-panel="inventory" aria-label="Summary">
+    <div class="tile"><div class="k">Products</div><div class="v" id="tProducts">0</div></div>
+    <div class="tile"><div class="k">Units on hand</div><div class="v" id="tUnits">0</div></div>
+    <div class="tile" id="tLowWrap"><div class="k">Low stock</div><div class="v" id="tLow">0</div></div>
+    <div class="tile"><div class="k">Stock value</div><div class="v" id="tValue">&#8377;0</div></div>
+  </section>
+
+  <section class="card card-pad" data-panel="inventory" aria-labelledby="addTitle">
+    <h2 id="addTitle">Add item</h2>
+    <form id="addForm" autocomplete="off">
+      <fieldset id="formset">
+        <div class="fgrid">
+          <div class="f-name"><label for="f-name">Product Name</label><input id="f-name" required maxlength="120" placeholder="e.g. Steel water bottle 750 ml"></div>
+          <div><label for="f-sku">SKU</label><input id="f-sku" required maxlength="40" placeholder="e.g. BTL-750-STL"></div>
+          <div><label for="f-cat">Category</label><input id="f-cat" required maxlength="60" list="catList" placeholder="e.g. Kitchen"><datalist id="catList"></datalist></div>
+          <div><label for="f-stock">Current Stock</label><input id="f-stock" type="number" min="0" step="1" value="0" required inputmode="numeric"></div>
+          <div><label for="f-reorder">Reorder Level</label><input id="f-reorder" type="number" min="0" step="1" value="10" required inputmode="numeric"></div>
+          <div><label for="f-price">Unit Price (&#8377;)</label><input id="f-price" type="number" min="0" step="0.01" required inputmode="decimal" placeholder="0.00"></div>
+          <div class="f-submit"><button class="btn primary" id="addBtn" type="submit">Add item</button></div>
+        </div>
+      </fieldset>
+      <p class="form-msg" id="formMsg" role="alert"></p>
+    </form>
+  </section>
+
+  <section class="card" data-panel="inventory" aria-label="Inventory">
+    <div class="toolbar">
+      <div class="search"><label class="visually-hidden" for="q">Search inventory</label><input id="q" type="search" placeholder="Search name, SKU or category"></div>
+      <div class="cat"><label class="visually-hidden" for="cat">Filter by category</label><select id="cat"><option value="">All categories</option></select></div>
+      <button class="chip" id="lowOnly" type="button" aria-pressed="false">Low stock only</button>
+      <span class="count" id="count" aria-live="polite"></span>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col" data-key="name"><button class="sort" type="button" data-sort="name">Product Name</button></th>
+            <th scope="col" data-key="sku"><button class="sort" type="button" data-sort="sku">SKU</button></th>
+            <th scope="col" data-key="category"><button class="sort" type="button" data-sort="category">Category</button></th>
+            <th scope="col" class="ctr" data-key="stock"><button class="sort" type="button" data-sort="stock">Current Stock</button></th>
+            <th scope="col" class="num" data-key="reorder"><button class="sort" type="button" data-sort="reorder">Reorder Level</button></th>
+            <th scope="col" class="num" data-key="price"><button class="sort" type="button" data-sort="price">Unit Price</button></th>
+            <th scope="col"><span class="visually-hidden">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="tiles" data-panel="sales" aria-label="Sales summary" hidden>
+    <div class="tile"><div class="k" id="sKRev">Revenue</div><div class="v" id="sRevenue">&#8377;0</div></div>
+    <div class="tile"><div class="k">Units sold</div><div class="v" id="sUnits">0</div></div>
+    <div class="tile"><div class="k">Sales</div><div class="v" id="sCount">0</div></div>
+    <div class="tile"><div class="k">Average sale</div><div class="v" id="sAvg">&#8377;0</div></div>
+  </section>
+
+  <section class="card card-pad" data-panel="sales" aria-labelledby="saleTitle" hidden>
+    <h2 id="saleTitle">New bill</h2>
+    <form id="saleForm" autocomplete="off">
+      <fieldset id="saleset">
+        <div class="fgrid cust">
+          <div><label for="s-cust">Customer name</label><input id="s-cust" maxlength="80" placeholder="e.g. Ramesh Kumar (empty = walk-in)"></div>
+          <div><label for="s-phone">Phone</label><input id="s-phone" type="tel" maxlength="20" inputmode="tel" placeholder="e.g. 98765 43210"></div>
+          <div><label for="s-date">Bill date</label><input id="s-date" type="date"></div>
+          <div><label for="s-pay">Payment</label>
+            <select id="s-pay"><option>Cash</option><option>UPI</option><option>Card</option><option>Credit (pay later)</option></select>
+          </div>
+          <div class="full"><label for="s-addr">Customer address (optional)</label><input id="s-addr" maxlength="160" placeholder="Address to print on the bill"></div>
+        </div>
+
+        <h3 class="sub-h">Items on this bill</h3>
+        <div class="fgrid addln">
+          <div><label for="s-item">Product</label><select id="s-item"></select></div>
+          <div><label for="s-qty">Quantity</label><input id="s-qty" type="number" min="1" step="1" value="1" inputmode="numeric"></div>
+          <div><label for="s-price">Rate (&#8377;)</label><input id="s-price" type="number" min="0" step="0.01" inputmode="decimal"></div>
+          <div><button class="btn" id="addLineBtn" type="submit">Add to bill</button></div>
+        </div>
+        <div class="tablewrap lines-wrap">
+          <table class="lines">
+            <thead>
+              <tr>
+                <th scope="col">Product</th>
+                <th scope="col" class="num">Qty</th>
+                <th scope="col" class="num">Rate</th>
+                <th scope="col" class="num">Amount</th>
+                <th scope="col"><span class="visually-hidden">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody id="billLines"></tbody>
+          </table>
+        </div>
+
+        <div class="billbox">
+          <div class="fgrid adj">
+            <div><label for="s-disc">Discount (&#8377;)</label><input id="s-disc" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0"></div>
+            <div><label for="s-gst">GST (added on top)</label>
+              <select id="s-gst"><option value="0">No GST</option><option value="5">GST 5%</option><option value="12">GST 12%</option><option value="18">GST 18%</option><option value="28">GST 28%</option></select>
+            </div>
+          </div>
+          <div class="totals" aria-live="polite">
+            <div class="trow"><span>Subtotal</span><span id="bSub">&#8377;0.00</span></div>
+            <div class="trow" id="bDiscRow" hidden><span>Discount</span><span id="bDisc">&#8377;0.00</span></div>
+            <div class="trow" id="bGstRow" hidden><span id="bGstLbl">GST</span><span id="bGst">&#8377;0.00</span></div>
+            <div class="trow grand"><span>Total</span><span id="bTotal">&#8377;0.00</span></div>
+          </div>
+        </div>
+        <div class="bill-actions">
+          <button class="btn primary" id="saleBtn" type="button">Save bill</button>
+          <button class="btn" id="clearBillBtn" type="button">Clear bill</button>
+        </div>
+      </fieldset>
+      <p class="form-msg" id="saleMsg" role="alert"></p>
+    </form>
+  </section>
+
+  <section class="card" data-panel="sales" aria-label="Bills" hidden>
+    <div class="toolbar">
+      <h2>Bills</h2>
+      <div class="search"><label class="visually-hidden" for="bq">Search bills</label><input id="bq" type="search" placeholder="Search bill no., customer or phone"></div>
+      <span class="count" id="bcount" aria-live="polite"></span>
+    </div>
+    <div class="tablewrap">
+      <table class="bills">
+        <thead>
+          <tr>
+            <th scope="col">Bill No</th>
+            <th scope="col">Date</th>
+            <th scope="col">Customer</th>
+            <th scope="col" class="num">Items</th>
+            <th scope="col">Payment</th>
+            <th scope="col" class="num">Total</th>
+            <th scope="col"><span class="visually-hidden">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody id="billsRows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card" data-panel="sales" aria-label="Sales history" hidden>
+    <div class="toolbar">
+      <h2>Sales history</h2>
+      <div class="search"><label class="visually-hidden" for="sq">Search sales</label><input id="sq" type="search" placeholder="Search product, SKU, customer or bill no."></div>
+      <div class="cat"><label class="visually-hidden" for="period">Period</label>
+        <select id="period">
+          <option value="all">All time</option>
+          <option value="today">Today</option>
+          <option value="7">Last 7 days</option>
+          <option value="month">This month</option>
+        </select>
+      </div>
+      <span class="count" id="scount" aria-live="polite"></span>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead id="salesHead">
+          <tr>
+            <th scope="col" data-skey="date"><button class="sort" type="button" data-ssort="date">Date</button></th>
+            <th scope="col" data-skey="billNo"><button class="sort" type="button" data-ssort="billNo">Bill No</button></th>
+            <th scope="col" data-skey="name"><button class="sort" type="button" data-ssort="name">Product Name</button></th>
+            <th scope="col" data-skey="sku"><button class="sort" type="button" data-ssort="sku">SKU</button></th>
+            <th scope="col" data-skey="customer"><button class="sort" type="button" data-ssort="customer">Customer</button></th>
+            <th scope="col" class="num" data-skey="qty"><button class="sort" type="button" data-ssort="qty">Quantity</button></th>
+            <th scope="col" class="num" data-skey="price"><button class="sort" type="button" data-ssort="price">Unit Price</button></th>
+            <th scope="col" class="num" data-skey="total"><button class="sort" type="button" data-ssort="total">Total</button></th>
+            <th scope="col"><span class="visually-hidden">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody id="salesRows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="tiles" data-panel="purchases" aria-label="Purchases summary" hidden>
+    <div class="tile"><div class="k" id="pKSpend">Spend</div><div class="v" id="pSpend">&#8377;0</div></div>
+    <div class="tile"><div class="k">Units bought</div><div class="v" id="pUnits">0</div></div>
+    <div class="tile"><div class="k">Purchases</div><div class="v" id="pCount">0</div></div>
+    <div class="tile"><div class="k">Average purchase</div><div class="v" id="pAvg">&#8377;0</div></div>
+  </section>
+
+  <section class="card card-pad" data-panel="purchases" aria-labelledby="purchaseTitle" hidden>
+    <h2 id="purchaseTitle">Record purchase</h2>
+    <form id="purchaseForm" autocomplete="off">
+      <fieldset id="purchaseset">
+        <div class="fgrid sale">
+          <div class="f-name"><label for="p-item">Product</label><select id="p-item" required></select></div>
+          <div><label for="p-qty">Quantity</label><input id="p-qty" type="number" min="1" step="1" value="1" required inputmode="numeric"></div>
+          <div><label for="p-cost">Unit Cost (&#8377;)</label><input id="p-cost" type="number" min="0" step="0.01" required inputmode="decimal" placeholder="0.00"></div>
+          <div><label for="p-date">Date</label><input id="p-date" type="date" required></div>
+          <div><label for="p-sup">Supplier (optional)</label><input id="p-sup" maxlength="80" placeholder="e.g. Volt Wholesale"></div>
+          <div class="f-submit"><button class="btn primary" id="purchaseBtn" type="submit">Record purchase</button></div>
+        </div>
+      </fieldset>
+      <p class="form-msg" id="purchaseMsg" role="alert"></p>
+    </form>
+  </section>
+
+  <section class="card" data-panel="purchases" aria-label="Purchase history" hidden>
+    <div class="toolbar">
+      <div class="search"><label class="visually-hidden" for="pq">Search purchases</label><input id="pq" type="search" placeholder="Search product, SKU or supplier"></div>
+      <div class="cat"><label class="visually-hidden" for="pperiod">Period</label>
+        <select id="pperiod">
+          <option value="all">All time</option>
+          <option value="today">Today</option>
+          <option value="7">Last 7 days</option>
+          <option value="month">This month</option>
+        </select>
+      </div>
+      <span class="count" id="pcount" aria-live="polite"></span>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead id="purchasesHead">
+          <tr>
+            <th scope="col" data-pkey="date"><button class="sort" type="button" data-psort="date">Date</button></th>
+            <th scope="col" data-pkey="name"><button class="sort" type="button" data-psort="name">Product Name</button></th>
+            <th scope="col" data-pkey="sku"><button class="sort" type="button" data-psort="sku">SKU</button></th>
+            <th scope="col" data-pkey="supplier"><button class="sort" type="button" data-psort="supplier">Supplier</button></th>
+            <th scope="col" class="num" data-pkey="qty"><button class="sort" type="button" data-psort="qty">Quantity</button></th>
+            <th scope="col" class="num" data-pkey="cost"><button class="sort" type="button" data-psort="cost">Unit Cost</button></th>
+            <th scope="col" class="num" data-pkey="total"><button class="sort" type="button" data-psort="total">Total</button></th>
+            <th scope="col"><span class="visually-hidden">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody id="purchasesRows"></tbody>
+      </table>
+    </div>
+  </section>
+  <footer class="foot">
+    <p class="muted">Your data is stored on this phone only and works without internet. Back it up regularly, because clearing the app data or uninstalling erases it.</p>
+    <div class="foot-actions">
+      <button class="btn" id="backupBtn" type="button">Back up data</button>
+      <button class="btn" id="restoreBtn" type="button">Restore backup</button>
+      <input type="file" id="restoreFile" accept=".json,application/json" hidden>
+      <button class="btn" id="clearBtn" type="button">Clear all data</button>
+      <span class="muted" id="offlineMsg" role="status"></span>
+    </div>
+  </footer>
+</div>
+
+<div class="modal-back" id="modal" hidden>
+  <div class="modal" id="modalBox" role="dialog" aria-modal="true" aria-labelledby="modalTitle" tabindex="-1"></div>
+</div>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+/* Offline storage layer: gives the page the same db, user and downloads
+   interfaces it uses online, backed by this browser's localStorage. */
+(function () {
+  var KEY = 'stockroom-offline-v1';
+  var COLS = ['items', 'sales', 'purchases'];
+  var store = null;
+  var listeners = [];
+
+  function seed() {
+    var rows = [
+      ['ex-01', 'Havells 1.5 sq mm copper wire (90 m)', 'WIR-HVL-15-90', 'Wires & Cables', 24, 10, 2150],
+      ['ex-02', 'Polycab 2.5 sq mm copper wire (90 m)', 'WIR-PLY-25-90', 'Wires & Cables', 6, 8, 3480],
+      ['ex-03', 'Anchor Roma 6A switch', 'SWT-ANC-6A', 'Switches & Sockets', 85, 30, 38],
+      ['ex-04', 'Legrand 16A socket', 'SKT-LGR-16A', 'Switches & Sockets', 40, 20, 125],
+      ['ex-05', 'Schneider 32A MCB (single pole)', 'MCB-SCH-32A', 'Circuit Protection', 14, 10, 285],
+      ['ex-06', 'Philips 9W LED bulb (B22)', 'LED-PHL-9W', 'Lighting', 150, 50, 79],
+      ['ex-07', 'Syska 20W LED batten', 'LED-SYS-20B', 'Lighting', 18, 25, 310],
+      ['ex-08', 'Crompton 1200 mm ceiling fan', 'FAN-CRM-1200', 'Fans', 9, 5, 1950],
+      ['ex-09', 'Orient 4-socket extension board', 'EXT-ORT-4S', 'Accessories', 22, 10, 420],
+      ['ex-10', 'PVC insulation tape (pack of 10)', 'TPE-PVC-10', 'Accessories', 4, 12, 150]
+    ];
+    var items = {};
+    rows.forEach(function (r, i) {
+      items[r[0]] = { name: r[1], sku: r[2], category: r[3], stock: r[4], reorder: r[5], price: r[6], createdAt: 1763190000001 + i };
+    });
+    function sale(item, qty, price, date, customer, t) {
+      var i = items[item];
+      return { itemId: item, name: i.name, sku: i.sku, category: i.category, qty: qty, price: price, gross: qty * price, discount: 0, total: qty * price, date: date, customer: customer, sample: true, createdAt: t };
+    }
+    function purchase(item, qty, cost, date, supplier, t) {
+      var i = items[item];
+      return { itemId: item, name: i.name, sku: i.sku, category: i.category, qty: qty, cost: cost, total: qty * cost, date: date, supplier: supplier, sample: true, createdAt: t };
+    }
+    return {
+      items: items,
+      sales: {
+        'sale-01': sale('ex-08', 1, 1950, '2026-11-15', 'Walk-in', 1794737000002),
+        'sale-02': sale('ex-06', 12, 79, '2026-11-15', 'Walk-in', 1794737000001),
+        'sale-03': sale('ex-03', 20, 38, '2026-11-14', 'Gupta Builders', 1794650000001),
+        'sale-04': sale('ex-01', 3, 2150, '2026-11-13', 'Gupta Builders', 1794560000001),
+        'sale-05': sale('ex-05', 6, 285, '2026-11-12', 'Mehta Contractors', 1794470000001),
+        'sale-06': sale('ex-02', 2, 3480, '2026-11-10', 'Mehta Contractors', 1794300000001),
+        'sale-07': sale('ex-09', 4, 420, '2026-11-08', 'Walk-in', 1794130000001),
+        'sale-08': sale('ex-10', 10, 150, '2026-11-04', 'Walk-in', 1793700000001)
+      },
+      purchases: {
+        'purchase-01': purchase('ex-06', 100, 58, '2026-11-14', 'Bright Lite Distributors', 1794650000002),
+        'purchase-02': purchase('ex-01', 20, 1650, '2026-11-12', 'Havells Dealer, Delhi', 1794470000002),
+        'purchase-03': purchase('ex-03', 100, 26, '2026-11-11', 'Anchor Wholesale', 1794380000001),
+        'purchase-04': purchase('ex-08', 10, 1500, '2026-11-09', 'Crompton Dealer', 1794210000001),
+        'purchase-05': purchase('ex-05', 20, 210, '2026-11-06', 'Schneider Distributor', 1793950000001),
+        'purchase-06': purchase('ex-02', 10, 2700, '2026-11-03', 'Polycab Dealer', 1793600000001)
+      },
+      bills: {},
+      settings: {}
+    };
+  }
+
+  function valid(s) {
+    return !!s && typeof s === 'object' && COLS.every(function (c) {
+      return s[c] && typeof s[c] === 'object' && !Array.isArray(s[c]);
+    });
+  }
+  function read() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) { var s = JSON.parse(raw); if (valid(s)) return s; }
+    } catch (e) {}
+    return null;
+  }
+  function say(text) {
+    var el = document.getElementById('offlineMsg');
+    if (el) el.textContent = text;
+  }
+  function persist() {
+    try { localStorage.setItem(KEY, JSON.stringify(store)); }
+    catch (e) { say('This browser is blocking storage, so changes will be lost when you close the page. Use Back up data often.'); }
+  }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
+  store = read() || seed();
+  store.bills = store.bills || {};
+  store.settings = store.settings || {};
+  persist();
+
+  var META = { fromCache: false, hasPendingWrites: false };
+  function querySnap(col) {
+    var data = store[col] || {};
+    var docs = Object.keys(data).sort().map(function (id) {
+      return { id: id, exists: true, data: function () { return clone(data[id]); }, metadata: META };
+    });
+    return { docs: docs, size: docs.length, empty: !docs.length, metadata: META };
+  }
+  function notify(col) {
+    listeners.slice().forEach(function (l) {
+      if (col && l.col !== col) return;
+      try { l.next(querySnap(l.col)); } catch (e) { console.error(e); }
+    });
+  }
+  function newId() { return 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+
+  function docRef(col, id) {
+    return {
+      id: id,
+      path: col + '/' + id,
+      get: function () {
+        var d = (store[col] || {})[id];
+        return Promise.resolve({ id: id, exists: !!d, data: function () { return d ? clone(d) : undefined; }, metadata: META });
+      },
+      set: function (data) {
+        (store[col] = store[col] || {})[id] = clone(data);
+        persist(); notify(col);
+        return Promise.resolve();
+      },
+      update: function (data) {
+        var cur = (store[col] || {})[id];
+        if (!cur) return Promise.reject({ code: 'invalid_argument', message: 'Document does not exist' });
+        Object.keys(data).forEach(function (k) { cur[k] = data[k]; });
+        persist(); notify(col);
+        return Promise.resolve();
+      },
+      delete: function () {
+        if (store[col]) delete store[col][id];
+        persist(); notify(col);
+        return Promise.resolve();
+      }
+    };
+  }
+  function collection(name) {
+    return {
+      path: name,
+      doc: function (id) { return docRef(name, id || newId()); },
+      add: function (data) {
+        var r = docRef(name, newId());
+        return r.set(data).then(function () { return r; });
+      },
+      onSnapshot: function (next) {
+        var l = { col: name, next: next };
+        listeners.push(l);
+        setTimeout(function () { if (listeners.indexOf(l) !== -1) next(querySnap(name)); }, 0);
+        return function () { listeners = listeners.filter(function (x) { return x !== l; }); };
+      }
+    };
+  }
+
+  function saveFile(filename, data, type) {
+    var blob = new Blob([data], { type: type });
+    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 1000);
+  }
+
+  var caps = {
+    db: { collection: collection, doc: function (p) { var s = String(p).split('/'); return docRef(s[0], s[1]); } },
+    user: { can: function () { return true; }, isOwner: function () { return true; }, canEdit: function () { return true; } },
+    downloads: {
+      save: function (req) {
+        saveFile(req.filename, req.data, /\.csv$/i.test(req.filename) ? 'text/csv;charset=utf-8' : /\.html?$/i.test(req.filename) ? 'text/html;charset=utf-8' : 'text/plain;charset=utf-8');
+        return Promise.resolve({ status: 'saved' });
+      }
+    }
+  };
+  window.__offline = true;
+  window.claude = { use: function (name) { return Promise.resolve(caps[name] || null); } };
+
+  // Keep two open tabs of this file in step.
+  window.addEventListener('storage', function (e) {
+    if (e.key !== KEY) return;
+    var s = read();
+    if (s) { store = s; notify(); }
+  });
+
+  /* Backup, restore and clear */
+  function stamp() {
+    var d = new Date(), p = function (n) { return String(n).padStart(2, '0'); };
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+  }
+  var backupBtn = document.getElementById('backupBtn');
+  var restoreBtn = document.getElementById('restoreBtn');
+  var restoreFile = document.getElementById('restoreFile');
+  var clearBtn = document.getElementById('clearBtn');
+  var clearTimer = null;
+
+  backupBtn.addEventListener('click', function () {
+    var payload = { app: 'stockroom', version: 1, exportedAt: new Date().toISOString(), data: store };
+    saveFile('stockroom-backup-' + stamp() + '.json', JSON.stringify(payload, null, 2), 'application/json');
+    say('Backup downloaded. Keep it somewhere safe.');
+  });
+  restoreBtn.addEventListener('click', function () { restoreFile.click(); });
+  restoreFile.addEventListener('change', function () {
+    var f = restoreFile.files && restoreFile.files[0];
+    if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var obj = JSON.parse(String(reader.result));
+        var data = obj && obj.data ? obj.data : obj;
+        if (!valid(data)) throw new Error('shape');
+        data.bills = data.bills || {}; data.settings = data.settings || {};
+        store = data; persist(); notify();
+        say('Backup restored.');
+      } catch (e) {
+        say('That file is not a Stockroom backup.');
+      }
+      restoreFile.value = '';
+    };
+    reader.onerror = function () { say('Could not read that file.'); restoreFile.value = ''; };
+    reader.readAsText(f);
+  });
+  clearBtn.addEventListener('click', function () {
+    if (clearBtn.getAttribute('data-armed') === '1') {
+      clearTimeout(clearTimer);
+      clearBtn.removeAttribute('data-armed'); clearBtn.textContent = 'Clear all data';
+      store = { items: {}, sales: {}, purchases: {}, bills: {}, settings: {} };
+      persist(); notify();
+      say('All data cleared. Restore a backup to bring it back.');
+      return;
+    }
+    clearBtn.setAttribute('data-armed', '1');
+    clearBtn.textContent = 'Click again to erase everything';
+    clearTimer = setTimeout(function () {
+      clearBtn.removeAttribute('data-armed'); clearBtn.textContent = 'Clear all data';
+    }, 4000);
+  });
+})();
+
+</script>
+<script>
+(function () {
+  var INR = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
+  var NUM = new Intl.NumberFormat('en-IN');
+  var $ = function (id) { return document.getElementById(id); };
+
+  var state = {
+    items: [], db: null, ready: false, loaded: false, mode: 'connecting',
+    canWrite: true, q: '', cat: '', lowOnly: false, sort: { key: 'name', dir: 1 }, confirmId: null,
+    sales: [], salesLoaded: false, view: 'inventory', sq: '', period: 'all', ssort: { key: 'date', dir: -1 }, confirmSaleId: null,
+    purchases: [], purchasesLoaded: false, pq: '', pperiod: 'all', psort: { key: 'date', dir: -1 }, confirmPurchaseId: null,
+    bills: [], billsLoaded: false, bq: '', confirmBillId: null,
+    shop: { name: 'Hindustan Electrical', address: '', phone: '', gstin: '', note: 'Thank you for shopping with us.' }
+  };
+  var draft = [];             // lines on the bill being made: { itemId, qty, price }
+  var dirty = new Map();      // id -> stock value waiting to be saved
+  var inflight = new Set();   // ids with a save in progress
+  var timers = new Map();     // id -> debounce timer
+  var focusAfter = null;
+  var memSeq = 0, confirmTimer = null, toastTimer = null, catKey = null;
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function markEmpty(tbodyId, empty) {
+    var t = $(tbodyId).closest('table');
+    if (t) t.classList.toggle('is-empty', !!empty);
+  }
+  function stockOf(it) { return dirty.has(it.id) ? dirty.get(it.id) : it.stock; }
+  function isLow(it) { return stockOf(it) < it.reorder; }
+  function toast(msg) {
+    var t = $('toast');
+    t.textContent = msg; t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.hidden = true; }, 3000);
+  }
+  function writeMsg(err) {
+    var c = err && err.code;
+    if (c === 'quota_exceeded') return 'Storage limit reached. Remove some items and try again.';
+    if (c === 'invalid_argument') return 'That change could not be saved. You may only have view access to this inventory.';
+    return 'That change could not be saved. Try again.';
+  }
+  function normalize(id, d) {
+    return {
+      id: id,
+      name: String(d.name == null ? '' : d.name),
+      sku: String(d.sku == null ? '' : d.sku),
+      category: String(d.category == null ? '' : d.category),
+      stock: Math.max(0, Math.floor(Number(d.stock) || 0)),
+      reorder: Math.max(0, Math.floor(Number(d.reorder) || 0)),
+      price: Math.max(0, Number(d.price) || 0)
+    };
+  }
+
+  function r2(n) { return Math.round(n * 100) / 100; }
+  function normalizeSale(id, d) {
+    var qty = Math.max(0, Math.floor(Number(d.qty) || 0)), price = Math.max(0, Number(d.price) || 0);
+    return {
+      id: id,
+      itemId: String(d.itemId == null ? '' : d.itemId),
+      name: String(d.name == null ? '' : d.name),
+      sku: String(d.sku == null ? '' : d.sku),
+      category: String(d.category == null ? '' : d.category),
+      qty: qty,
+      price: price,
+      total: d.total == null ? r2(qty * price) : Math.max(0, Number(d.total) || 0),
+      date: /^\d{4}-\d{2}-\d{2}$/.test(String(d.date)) ? String(d.date) : '',
+      customer: String(d.customer == null ? '' : d.customer),
+      billId: String(d.billId == null ? '' : d.billId),
+      billNo: String(d.billNo == null ? '' : d.billNo),
+      discount: Math.max(0, Number(d.discount) || 0),
+      sample: d.sample === true,
+      createdAt: Number(d.createdAt) || 0
+    };
+  }
+
+  function normalizeBill(id, d) {
+    var lines = Array.isArray(d.lines) ? d.lines.map(function (l) {
+      var qty = Math.max(0, Math.floor(Number(l.qty) || 0)), price = Math.max(0, Number(l.price) || 0);
+      var gross = l.gross == null ? r2(qty * price) : Math.max(0, Number(l.gross) || 0);
+      var disc = Math.max(0, Number(l.discount) || 0);
+      return {
+        itemId: String(l.itemId == null ? '' : l.itemId), name: String(l.name == null ? '' : l.name), sku: String(l.sku == null ? '' : l.sku),
+        qty: qty, price: price, gross: gross, discount: disc, total: l.total == null ? r2(gross - disc) : Math.max(0, Number(l.total) || 0)
+      };
+    }) : [];
+    return {
+      id: id,
+      number: String(d.number == null ? '' : d.number),
+      date: /^\d{4}-\d{2}-\d{2}$/.test(String(d.date)) ? String(d.date) : '',
+      customer: String(d.customer == null ? '' : d.customer),
+      phone: String(d.phone == null ? '' : d.phone),
+      address: String(d.address == null ? '' : d.address),
+      payment: String(d.payment == null ? '' : d.payment),
+      lines: lines,
+      subtotal: Math.max(0, Number(d.subtotal) || 0),
+      discount: Math.max(0, Number(d.discount) || 0),
+      gstRate: Math.max(0, Number(d.gstRate) || 0),
+      gst: Math.max(0, Number(d.gst) || 0),
+      total: Math.max(0, Number(d.total) || 0),
+      createdAt: Number(d.createdAt) || 0
+    };
+  }
+
+  function normalizeShop(d) {
+    var def = { name: 'Hindustan Electrical', address: '', phone: '', gstin: '', note: 'Thank you for shopping with us.' };
+    if (!d) return def;
+    return {
+      name: String(d.name || def.name).trim() || def.name,
+      address: String(d.address == null ? '' : d.address),
+      phone: String(d.phone == null ? '' : d.phone),
+      gstin: String(d.gstin == null ? '' : d.gstin),
+      note: String(d.note == null ? def.note : d.note)
+    };
+  }
+
+  /* test:start */
+  var ONES = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+  var TENS = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+  function below100(n) { return n < 20 ? ONES[n] : TENS[Math.floor(n / 10)] + (n % 10 ? ' ' + ONES[n % 10] : ''); }
+  function below1000(n) {
+    var h = Math.floor(n / 100), r = n % 100, out = [];
+    if (h) out.push(ONES[h] + ' Hundred');
+    if (r) out.push(below100(r));
+    return out.join(' ');
+  }
+  function intWords(n) {
+    if (n === 0) return 'Zero';
+    var parts = [], cr = Math.floor(n / 1e7); n = n % 1e7;
+    var lk = Math.floor(n / 1e5); n = n % 1e5;
+    var th = Math.floor(n / 1e3); n = n % 1e3;
+    if (cr) parts.push(intWords(cr) + ' Crore');
+    if (lk) parts.push(below100(lk) + ' Lakh');
+    if (th) parts.push(below100(th) + ' Thousand');
+    if (n) parts.push(below1000(n));
+    return parts.join(' ');
+  }
+  function amountInWords(total) {
+    var rupees = Math.floor(total + 1e-9), paise = Math.round((total - rupees) * 100);
+    if (paise >= 100) { rupees += 1; paise = 0; }
+    return 'Rupees ' + intWords(rupees) + (paise ? ' and ' + intWords(paise) + ' Paise' : '') + ' Only';
+  }
+  function calcBill(grossList, disc, rate) {
+    var subtotal = r2(grossList.reduce(function (a, g) { return a + g; }, 0));
+    var d = r2(Math.min(Math.max(Number(disc) || 0, 0), subtotal));
+    var taxable = r2(subtotal - d), r = Math.max(Number(rate) || 0, 0);
+    var gst = r2(taxable * r / 100);
+    return { subtotal: subtotal, discount: d, taxable: taxable, gstRate: r, gst: gst, total: r2(taxable + gst) };
+  }
+  function splitDiscount(grossList, disc) {
+    var subtotal = grossList.reduce(function (a, g) { return a + g; }, 0), shares = [], used = 0;
+    grossList.forEach(function (g, i) {
+      var s = (i === grossList.length - 1) ? r2(disc - used) : r2(subtotal ? disc * g / subtotal : 0);
+      s = Math.min(Math.max(s, 0), g);
+      shares.push(s); used = r2(used + s);
+    });
+    return shares;
+  }
+  function shopPrefix(name) {
+    var p = String(name).split(/\s+/).filter(Boolean).map(function (w) { return w.charAt(0); }).join('').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
+    return p || 'BILL';
+  }
+  function nextBillNo(bills, prefix) {
+    var max = 0;
+    bills.forEach(function (b) { var m = /(\d+)\s*$/.exec(b.number); if (m) max = Math.max(max, parseInt(m[1], 10)); });
+    return prefix + '-' + String(max + 1).padStart(4, '0');
+  }
+  /* test:end */
+
+  function normalizePurchase(id, d) {
+    var qty = Math.max(0, Math.floor(Number(d.qty) || 0)), cost = Math.max(0, Number(d.cost) || 0);
+    return {
+      id: id,
+      itemId: String(d.itemId == null ? '' : d.itemId),
+      name: String(d.name == null ? '' : d.name),
+      sku: String(d.sku == null ? '' : d.sku),
+      category: String(d.category == null ? '' : d.category),
+      qty: qty,
+      cost: cost,
+      total: d.total == null ? r2(qty * cost) : Math.max(0, Number(d.total) || 0),
+      date: /^\d{4}-\d{2}-\d{2}$/.test(String(d.date)) ? String(d.date) : '',
+      supplier: String(d.supplier == null ? '' : d.supplier),
+      sample: d.sample === true,
+      createdAt: Number(d.createdAt) || 0
+    };
+  }
+
+  /* ---------- rendering ---------- */
+  function visibleItems() {
+    var q = state.q.trim().toLowerCase();
+    var out = state.items.filter(function (it) {
+      if (state.cat && it.category !== state.cat) return false;
+      if (state.lowOnly && !isLow(it)) return false;
+      if (q && (it.name + ' ' + it.sku + ' ' + it.category).toLowerCase().indexOf(q) === -1) return false;
+      return true;
+    });
+    var k = state.sort.key, dir = state.sort.dir;
+    out.sort(function (a, b) {
+      var x = k === 'stock' ? stockOf(a) : a[k], y = k === 'stock' ? stockOf(b) : b[k];
+      var r = (typeof x === 'number') ? x - y : String(x).localeCompare(String(y), undefined, { numeric: true, sensitivity: 'base' });
+      return (r || a.name.localeCompare(b.name)) * dir;
+    });
+    return out;
+  }
+
+  function renderStatus() {
+    var el = $('status'), text, s = 'idle';
+    if (state.mode === 'saved') { text = 'Saved on this device'; s = 'saved'; }
+    else if (state.mode === 'local') { text = 'Not saved in this view'; s = 'problem'; }
+    else if (state.mode === 'slow') { text = "Can't reach saved data yet"; s = 'problem'; }
+    else if (state.mode === 'error') { text = 'Saved data unavailable'; s = 'problem'; }
+    else { text = 'Connecting…'; }
+    if (!state.canWrite) text += ' · View only';
+    el.textContent = text; el.setAttribute('data-state', s);
+  }
+
+  function renderTiles() {
+    var units = 0, value = 0, low = 0;
+    state.items.forEach(function (it) {
+      var s = stockOf(it); units += s; value += s * it.price; if (s < it.reorder) low++;
+    });
+    $('tProducts').textContent = NUM.format(state.items.length);
+    $('tUnits').textContent = NUM.format(units);
+    $('tLow').textContent = NUM.format(low);
+    $('tValue').textContent = INR.format(value);
+    $('tLowWrap').classList.toggle('alert', low > 0);
+  }
+
+  function renderCategories() {
+    var cats = Array.from(new Set(state.items.map(function (i) { return i.category; }).filter(Boolean)))
+      .sort(function (a, b) { return a.localeCompare(b); });
+    var key = cats.join('\u0001');
+    if (key === catKey) return;
+    catKey = key;
+    if (state.cat && cats.indexOf(state.cat) === -1) state.cat = '';
+    var sel = $('cat');
+    sel.innerHTML = '<option value="">All categories</option>' +
+      cats.map(function (c) { return '<option value="' + esc(c) + '">' + esc(c) + '</option>'; }).join('');
+    sel.value = state.cat;
+    $('catList').innerHTML = cats.map(function (c) { return '<option value="' + esc(c) + '"></option>'; }).join('');
+  }
+
+  function renderTable() {
+    var rows = visibleItems();
+    var dis = state.canWrite ? '' : ' disabled';
+    var html;
+    if (!rows.length) {
+      var msg, extra = '';
+      if (!state.loaded && state.mode !== 'local') msg = 'Loading inventory…';
+      else if (!state.items.length) msg = 'No items yet. Add your first product above.';
+      else {
+        msg = 'No items match your search or filters.';
+        extra = '<div><button class="btn" type="button" data-act="clear">Clear filters</button></div>';
+      }
+      html = '<tr><td colspan="7" class="empty">' + msg + extra + '</td></tr>';
+    } else {
+      html = rows.map(function (it) {
+        var s = stockOf(it), low = s < it.reorder, n = esc(it.name), id = esc(it.id);
+        var confirming = state.confirmId === it.id;
+        return '<tr data-id="' + id + '">' +
+          '<td><span class="pname">' + n + '</span>' + (low ? '<span class="badge">Low Stock</span>' : '') + '</td>' +
+          '<td><span class="sku">' + esc(it.sku) + '</span></td>' +
+          '<td><span class="tag">' + esc(it.category) + '</span></td>' +
+          '<td class="ctr"><div class="stepper">' +
+            '<button class="step" type="button" data-act="dec" title="Remove 1 (Shift-click for 10)" aria-label="Decrease stock of ' + n + '"' + (dis || s <= 0 ? ' disabled' : '') + '>&minus;</button>' +
+            '<span class="qty' + (low ? ' low' : '') + '">' + NUM.format(s) + '</span>' +
+            '<button class="step" type="button" data-act="inc" title="Add 1 (Shift-click for 10)" aria-label="Increase stock of ' + n + '"' + dis + '>+</button>' +
+          '</div></td>' +
+          '<td class="num">' + NUM.format(it.reorder) + '</td>' +
+          '<td class="num">' + INR.format(it.price) + '</td>' +
+          '<td class="act"><button class="rm' + (confirming ? ' confirm' : '') + '" type="button" data-act="rm" aria-label="Remove ' + n + '"' + dis + '>' + (confirming ? 'Remove?' : 'Remove') + '</button></td>' +
+        '</tr>';
+      }).join('');
+    }
+    $('rows').innerHTML = html; markEmpty('rows', !rows.length);
+    $('count').textContent = state.items.length ? 'Showing ' + rows.length + ' of ' + state.items.length : '';
+    updateExportLabel();
+    var ths = document.querySelectorAll('th[data-key]');
+    for (var i = 0; i < ths.length; i++) {
+      if (ths[i].getAttribute('data-key') === state.sort.key) ths[i].setAttribute('aria-sort', state.sort.dir === 1 ? 'ascending' : 'descending');
+      else ths[i].removeAttribute('aria-sort');
+    }
+    if (focusAfter) {
+      var b = document.querySelector('tr[data-id="' + (window.CSS && CSS.escape ? CSS.escape(focusAfter.id) : focusAfter.id) + '"] [data-act="' + focusAfter.act + '"]');
+      if (b && !b.disabled) b.focus();
+      focusAfter = null;
+    }
+  }
+
+  var PERIODS = { all: 'all time', today: 'today', '7': 'last 7 days', month: 'this month' };
+  var saleKey = null;
+
+  function dayStamp(offset) {
+    var d = new Date(); d.setDate(d.getDate() + offset);
+    var p = function (n) { return String(n).padStart(2, '0'); };
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+  }
+  function fmtDate(s) {
+    var d = new Date(s + 'T00:00:00');
+    return isNaN(d.getTime()) ? s : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function visibleSales() {
+    var q = state.sq.trim().toLowerCase(), today = dayStamp(0), from7 = dayStamp(-6), month = today.slice(0, 7);
+    var out = state.sales.filter(function (s) {
+      if (state.period === 'today' && s.date !== today) return false;
+      if (state.period === '7' && s.date < from7) return false;
+      if (state.period === 'month' && s.date.slice(0, 7) !== month) return false;
+      if (q && (s.name + ' ' + s.sku + ' ' + s.customer + ' ' + s.billNo).toLowerCase().indexOf(q) === -1) return false;
+      return true;
+    });
+    var k = state.ssort.key, dir = state.ssort.dir;
+    out.sort(function (a, b) {
+      var x = a[k], y = b[k];
+      var r = (typeof x === 'number') ? x - y : String(x).localeCompare(String(y), undefined, { numeric: true, sensitivity: 'base' });
+      return (r || (a.createdAt - b.createdAt)) * dir;
+    });
+    return out;
+  }
+
+  function updateExportLabel() {
+    var v = state.view, shown, total;
+    if (v === 'sales') { shown = visibleSales().length; total = state.sales.length; }
+    else if (v === 'purchases') { shown = visiblePurchases().length; total = state.purchases.length; }
+    else { shown = visibleItems().length; total = state.items.length; }
+    $('exportBtn').textContent = 'Export CSV' + (total ? ' (' + shown + ')' : '');
+  }
+
+  function renderView() {
+    var ps = document.querySelectorAll('[data-panel]');
+    for (var i = 0; i < ps.length; i++) ps[i].hidden = ps[i].getAttribute('data-panel') !== state.view;
+    var tabs = document.querySelectorAll('[data-go]');
+    for (var j = 0; j < tabs.length; j++) {
+      if (tabs[j].getAttribute('data-go') === state.view) tabs[j].setAttribute('aria-current', 'page');
+      else tabs[j].removeAttribute('aria-current');
+    }
+  }
+
+  function renderSalesTiles(rows) {
+    var rev = 0, units = 0;
+    rows.forEach(function (s) { rev += s.total; units += s.qty; });
+    $('sKRev').textContent = 'Revenue · ' + PERIODS[state.period];
+    $('sRevenue').textContent = INR.format(rev);
+    $('sUnits').textContent = NUM.format(units);
+    $('sCount').textContent = NUM.format(rows.length);
+    $('sAvg').textContent = INR.format(rows.length ? rev / rows.length : 0);
+  }
+
+  function renderSalesTable(rows) {
+    var dis = state.canWrite ? '' : ' disabled', html;
+    if (!rows.length) {
+      var msg, extra = '';
+      if (!state.salesLoaded && state.mode !== 'local') msg = 'Loading sales…';
+      else if (!state.sales.length) msg = 'No sales recorded yet. Record your first sale above.';
+      else {
+        msg = 'No sales match your search or period.';
+        extra = '<div><button class="btn" type="button" data-act="sclear">Clear filters</button></div>';
+      }
+      html = '<tr><td colspan="9" class="empty">' + msg + extra + '</td></tr>';
+    } else {
+      html = rows.map(function (s) {
+        var confirming = state.confirmSaleId === s.id;
+        var onBill = s.billId && state.bills.some(function (b) { return b.id === s.billId; });
+        return '<tr data-id="' + esc(s.id) + '">' +
+          '<td>' + esc(fmtDate(s.date)) + (s.sample ? ' <span class="tag">Example</span>' : '') + '</td>' +
+          '<td>' + (s.billNo ? (onBill ? '<button class="linkbtn" type="button" data-act="viewbill" data-bill="' + esc(s.billId) + '">' + esc(s.billNo) + '</button>' : '<span class="sku">' + esc(s.billNo) + '</span>') : '<span class="muted">—</span>') + '</td>' +
+          '<td><span class="pname">' + esc(s.name) + '</span></td>' +
+          '<td><span class="sku">' + esc(s.sku) + '</span></td>' +
+          '<td>' + (s.customer ? esc(s.customer) : '<span class="muted">—</span>') + '</td>' +
+          '<td class="num">' + NUM.format(s.qty) + '</td>' +
+          '<td class="num">' + INR.format(s.price) + '</td>' +
+          '<td class="num"' + (s.discount > 0 ? ' title="After a discount of ' + esc(INR.format(s.discount)) + '"' : '') + '><strong>' + INR.format(s.total) + '</strong></td>' +
+          '<td class="act">' + (onBill ? '' : '<button class="rm' + (confirming ? ' confirm' : '') + '" type="button" data-act="void" aria-label="Void sale of ' + esc(s.name) + '"' + dis + '>' + (confirming ? 'Void?' : 'Void') + '</button>') + '</td>' +
+        '</tr>';
+      }).join('');
+    }
+    $('salesRows').innerHTML = html; markEmpty('salesRows', !rows.length);
+    $('scount').textContent = state.sales.length ? 'Showing ' + rows.length + ' of ' + state.sales.length : '';
+    var ths = document.querySelectorAll('th[data-skey]');
+    for (var i = 0; i < ths.length; i++) {
+      if (ths[i].getAttribute('data-skey') === state.ssort.key) ths[i].setAttribute('aria-sort', state.ssort.dir === 1 ? 'ascending' : 'descending');
+      else ths[i].removeAttribute('aria-sort');
+    }
+    updateExportLabel();
+  }
+
+  function syncSalePrice(force) {
+    var it = state.items.find(function (x) { return x.id === $('s-item').value; });
+    var f = $('s-price');
+    if (it && (force || f.value === '')) f.value = it.price.toFixed(2);
+  }
+
+  function renderSaleSelect() {
+    var sel = $('s-item');
+    var list = state.items.slice().sort(function (a, b) { return a.name.localeCompare(b.name); });
+    var key = list.map(function (i) { return i.id + ':' + stockOf(i) + ':' + i.name + ':' + i.sku; }).join('|');
+    if (key === saleKey) return;
+    saleKey = key;
+    var prev = sel.value;
+    sel.innerHTML = list.length ? list.map(function (i) {
+      var s = stockOf(i);
+      return '<option value="' + esc(i.id) + '"' + (s <= 0 ? ' disabled' : '') + '>' + esc(i.name) + ' · ' + esc(i.sku) + ' · ' + (s <= 0 ? 'out of stock' : NUM.format(s) + ' in stock') + '</option>';
+    }).join('') : '<option value="" disabled>No products yet</option>';
+    if (prev && list.some(function (i) { return i.id === prev && stockOf(i) > 0; })) sel.value = prev;
+    syncSalePrice(prev !== sel.value);
+  }
+
+  var purchaseKey = null;
+
+  function visiblePurchases() {
+    var q = state.pq.trim().toLowerCase(), today = dayStamp(0), from7 = dayStamp(-6), month = today.slice(0, 7);
+    var out = state.purchases.filter(function (p) {
+      if (state.pperiod === 'today' && p.date !== today) return false;
+      if (state.pperiod === '7' && p.date < from7) return false;
+      if (state.pperiod === 'month' && p.date.slice(0, 7) !== month) return false;
+      if (q && (p.name + ' ' + p.sku + ' ' + p.supplier).toLowerCase().indexOf(q) === -1) return false;
+      return true;
+    });
+    var k = state.psort.key, dir = state.psort.dir;
+    out.sort(function (a, b) {
+      var x = a[k], y = b[k];
+      var r = (typeof x === 'number') ? x - y : String(x).localeCompare(String(y), undefined, { numeric: true, sensitivity: 'base' });
+      return (r || (a.createdAt - b.createdAt)) * dir;
+    });
+    return out;
+  }
+
+  function renderPurchasesTiles(rows) {
+    var spend = 0, units = 0;
+    rows.forEach(function (p) { spend += p.total; units += p.qty; });
+    $('pKSpend').textContent = 'Spend · ' + PERIODS[state.pperiod];
+    $('pSpend').textContent = INR.format(spend);
+    $('pUnits').textContent = NUM.format(units);
+    $('pCount').textContent = NUM.format(rows.length);
+    $('pAvg').textContent = INR.format(rows.length ? spend / rows.length : 0);
+  }
+
+  function renderPurchasesTable(rows) {
+    var dis = state.canWrite ? '' : ' disabled', html;
+    if (!rows.length) {
+      var msg, extra = '';
+      if (!state.purchasesLoaded && state.mode !== 'local') msg = 'Loading purchases…';
+      else if (!state.purchases.length) msg = 'No purchases recorded yet. Record your first purchase above.';
+      else {
+        msg = 'No purchases match your search or period.';
+        extra = '<div><button class="btn" type="button" data-act="pclear">Clear filters</button></div>';
+      }
+      html = '<tr><td colspan="8" class="empty">' + msg + extra + '</td></tr>';
+    } else {
+      html = rows.map(function (p) {
+        var confirming = state.confirmPurchaseId === p.id;
+        return '<tr data-id="' + esc(p.id) + '">' +
+          '<td>' + esc(fmtDate(p.date)) + (p.sample ? ' <span class="tag">Example</span>' : '') + '</td>' +
+          '<td><span class="pname">' + esc(p.name) + '</span></td>' +
+          '<td><span class="sku">' + esc(p.sku) + '</span></td>' +
+          '<td>' + (p.supplier ? esc(p.supplier) : '<span class="muted">—</span>') + '</td>' +
+          '<td class="num">' + NUM.format(p.qty) + '</td>' +
+          '<td class="num">' + INR.format(p.cost) + '</td>' +
+          '<td class="num"><strong>' + INR.format(p.total) + '</strong></td>' +
+          '<td class="act"><button class="rm' + (confirming ? ' confirm' : '') + '" type="button" data-act="pvoid" aria-label="Void purchase of ' + esc(p.name) + '"' + dis + '>' + (confirming ? 'Void?' : 'Void') + '</button></td>' +
+        '</tr>';
+      }).join('');
+    }
+    $('purchasesRows').innerHTML = html; markEmpty('purchasesRows', !rows.length);
+    $('pcount').textContent = state.purchases.length ? 'Showing ' + rows.length + ' of ' + state.purchases.length : '';
+    var ths = document.querySelectorAll('th[data-pkey]');
+    for (var i = 0; i < ths.length; i++) {
+      if (ths[i].getAttribute('data-pkey') === state.psort.key) ths[i].setAttribute('aria-sort', state.psort.dir === 1 ? 'ascending' : 'descending');
+      else ths[i].removeAttribute('aria-sort');
+    }
+    updateExportLabel();
+  }
+
+  function syncPurchaseCost(force) {
+    var id = $('p-item').value, f = $('p-cost');
+    if (!force && f.value !== '') return;
+    var last = null;
+    state.purchases.forEach(function (p) {
+      if (p.itemId === id && (!last || p.date > last.date || (p.date === last.date && p.createdAt > last.createdAt))) last = p;
+    });
+    if (last) f.value = last.cost.toFixed(2); else if (force) f.value = '';
+  }
+
+  function renderPurchaseSelect() {
+    var sel = $('p-item');
+    var list = state.items.slice().sort(function (a, b) { return a.name.localeCompare(b.name); });
+    var key = list.map(function (i) { return i.id + ':' + stockOf(i) + ':' + i.name + ':' + i.sku; }).join('|') + '#' + state.purchases.length;
+    if (key === purchaseKey) return;
+    purchaseKey = key;
+    var prev = sel.value;
+    sel.innerHTML = list.length ? list.map(function (i) {
+      return '<option value="' + esc(i.id) + '">' + esc(i.name) + ' · ' + esc(i.sku) + ' · ' + NUM.format(stockOf(i)) + ' in stock</option>';
+    }).join('') : '<option value="" disabled>No products yet</option>';
+    if (prev && list.some(function (i) { return i.id === prev; })) sel.value = prev;
+    syncPurchaseCost(prev !== sel.value);
+  }
+
+  /* ---------- bills: list, draft, sheet ---------- */
+  function renderBrand() {
+    $('shopName').textContent = state.shop.name;
+    document.title = state.shop.name;
+  }
+
+  function visibleBills() {
+    var q = state.bq.trim().toLowerCase();
+    var out = state.bills.filter(function (b) {
+      return !q || (b.number + ' ' + b.customer + ' ' + b.phone).toLowerCase().indexOf(q) !== -1;
+    });
+    out.sort(function (a, b) { return (b.createdAt - a.createdAt) || b.number.localeCompare(a.number, undefined, { numeric: true }); });
+    return out;
+  }
+
+  function renderBillsTable() {
+    var rows = visibleBills(), dis = state.canWrite ? '' : ' disabled', html;
+    if (!rows.length) {
+      var msg = (!state.billsLoaded && state.mode !== 'local') ? 'Loading bills…'
+        : state.bills.length ? 'No bills match your search.' : 'No bills yet. Make your first bill above.';
+      html = '<tr><td colspan="7" class="empty">' + msg + '</td></tr>';
+    } else {
+      html = rows.map(function (b) {
+        var confirming = state.confirmBillId === b.id;
+        return '<tr data-id="' + esc(b.id) + '">' +
+          '<td><span class="sku">' + esc(b.number) + '</span></td>' +
+          '<td>' + esc(fmtDate(b.date)) + '</td>' +
+          '<td>' + (b.customer ? esc(b.customer) : '<span class="muted">Walk-in</span>') + (b.phone ? ' <span class="muted">' + esc(b.phone) + '</span>' : '') + '</td>' +
+          '<td class="num">' + NUM.format(b.lines.length) + '</td>' +
+          '<td>' + esc(b.payment || '—') + '</td>' +
+          '<td class="num"><strong>' + INR.format(b.total) + '</strong></td>' +
+          '<td class="act"><button class="rm" type="button" data-act="viewbill" aria-label="View bill ' + esc(b.number) + '">View</button>' +
+          '<button class="rm' + (confirming ? ' confirm' : '') + '" type="button" data-act="voidbill" aria-label="Void bill ' + esc(b.number) + '"' + dis + '>' + (confirming ? 'Void?' : 'Void') + '</button></td>' +
+        '</tr>';
+      }).join('');
+    }
+    $('billsRows').innerHTML = html; markEmpty('billsRows', !rows.length);
+    $('bcount').textContent = state.bills.length ? 'Showing ' + rows.length + ' of ' + state.bills.length : '';
+  }
+
+  function draftRate() { return Number($('s-gst').value) || 0; }
+  function draftDiscount() { var v = $('s-disc').value; return v === '' ? 0 : Number(v); }
+
+  function renderDraft() {
+    draft = draft.filter(function (l) { return state.items.some(function (i) { return i.id === l.itemId; }); });
+    var html;
+    if (!draft.length) {
+      html = '<tr><td colspan="5" class="empty">No items yet. Choose a product above and click Add to bill.</td></tr>';
+    } else {
+      html = draft.map(function (l) {
+        var it = state.items.find(function (i) { return i.id === l.itemId; }), over = l.qty > stockOf(it);
+        return '<tr data-item="' + esc(l.itemId) + '">' +
+          '<td><span class="pname">' + esc(it.name) + '</span> <span class="sku">' + esc(it.sku) + '</span>' + (over ? '<span class="badge">Only ' + NUM.format(stockOf(it)) + ' in stock</span>' : '') + '</td>' +
+          '<td class="num">' + NUM.format(l.qty) + '</td>' +
+          '<td class="num">' + INR.format(l.price) + '</td>' +
+          '<td class="num"><strong>' + INR.format(r2(l.qty * l.price)) + '</strong></td>' +
+          '<td class="act"><button class="rm" type="button" data-act="rmline" aria-label="Remove ' + esc(it.name) + ' from the bill">Remove</button></td>' +
+        '</tr>';
+      }).join('');
+    }
+    $('billLines').innerHTML = html; markEmpty('billLines', !draft.length);
+    var c = calcBill(draft.map(function (l) { return r2(l.qty * l.price); }), draftDiscount(), draftRate());
+    $('bSub').textContent = INR.format(c.subtotal);
+    $('bDiscRow').hidden = !(c.discount > 0);
+    $('bDisc').textContent = '−' + INR.format(c.discount);
+    $('bGstRow').hidden = !(c.gstRate > 0);
+    $('bGstLbl').textContent = 'GST ' + c.gstRate + '%';
+    $('bGst').textContent = INR.format(c.gst);
+    $('bTotal').textContent = INR.format(c.total);
+  }
+
+  function billSheet(b, shop) {
+    var contact = [shop.phone ? 'Phone: ' + esc(shop.phone) : '', shop.gstin ? 'GSTIN: ' + esc(shop.gstin) : ''].filter(Boolean).join(' &middot; ');
+    var head = '<div class="bl-head"><div><div class="bl-shop">' + esc(shop.name) + '</div>' +
+      (shop.address ? '<div class="bl-sub">' + esc(shop.address) + '</div>' : '') +
+      (contact ? '<div class="bl-sub">' + contact + '</div>' : '') +
+      '</div><div class="bl-meta"><div class="bl-title">BILL</div><div><strong>' + esc(b.number) + '</strong></div><div>' + esc(fmtDate(b.date)) + '</div></div></div>';
+    var to = '<div class="bl-to"><div class="bl-label">Billed to</div><div><strong>' + esc(b.customer || 'Walk-in customer') + '</strong></div>' +
+      (b.phone ? '<div class="bl-sub">Phone: ' + esc(b.phone) + '</div>' : '') +
+      (b.address ? '<div class="bl-sub">' + esc(b.address) + '</div>' : '') + '</div>';
+    var rows = b.lines.map(function (l, i) {
+      return '<tr><td>' + (i + 1) + '</td><td>' + esc(l.name) + (l.sku ? ' <span class="bl-sku">' + esc(l.sku) + '</span>' : '') + '</td>' +
+        '<td class="r">' + NUM.format(l.qty) + '</td><td class="r">' + INR.format(l.price) + '</td><td class="r">' + INR.format(l.gross) + '</td></tr>';
+    }).join('');
+    var table = '<table class="bl-table"><thead><tr><th>#</th><th>Item</th><th class="r">Qty</th><th class="r">Rate</th><th class="r">Amount</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    var totals = '<div class="bl-totals"><div class="bl-row"><span>Subtotal</span><span>' + INR.format(b.subtotal) + '</span></div>' +
+      (b.discount > 0 ? '<div class="bl-row"><span>Discount</span><span>−' + INR.format(b.discount) + '</span></div>' : '') +
+      (b.gstRate > 0 ? '<div class="bl-row"><span>GST ' + esc(b.gstRate) + '%</span><span>' + INR.format(b.gst) + '</span></div>' : '') +
+      '<div class="bl-row g"><span>Total</span><span>' + INR.format(b.total) + '</span></div></div>';
+    var foot = '<div class="bl-foot"><div>' + (b.payment ? 'Payment: ' + esc(b.payment) + '<br>' : '') + esc(shop.note) + '</div><div class="bl-sign">For ' + esc(shop.name) + '</div></div>';
+    return '<div class="bl">' + head + to + table + totals + '<div class="bl-words">Amount in words: ' + esc(amountInWords(b.total)) + '</div>' + foot + '</div>';
+  }
+
+  function billText(b, shop) {
+    var money = function (n) { return INR.format(n); };
+    var out = ['*' + shop.name + '*'];
+    if (shop.address) out.push(shop.address);
+    var contact = [shop.phone ? 'Phone: ' + shop.phone : '', shop.gstin ? 'GSTIN: ' + shop.gstin : ''].filter(Boolean).join(' | ');
+    if (contact) out.push(contact);
+    out.push('', 'Bill No: ' + b.number + ' | Date: ' + fmtDate(b.date), 'Customer: ' + (b.customer || 'Walk-in customer'), '');
+    b.lines.forEach(function (l, i) { out.push((i + 1) + '. ' + l.name + ' x ' + l.qty + ' @ ' + money(l.price) + ' = ' + money(l.gross)); });
+    out.push('', 'Subtotal: ' + money(b.subtotal));
+    if (b.discount > 0) out.push('Discount: -' + money(b.discount));
+    if (b.gstRate > 0) out.push('GST ' + b.gstRate + '%: ' + money(b.gst));
+    out.push('*Total: ' + money(b.total) + '*', amountInWords(b.total));
+    if (b.payment) out.push('Payment: ' + b.payment);
+    if (shop.note) out.push('', shop.note);
+    return out.join('\n');
+  }
+
+  var DL_CSS = 'body{margin:0;padding:16px;background:#f3f4f6;font-family:system-ui,sans-serif}.bar{max-width:860px;margin:0 auto 12px;text-align:right}.bar button{padding:8px 16px;border:1px solid #9ca3af;border-radius:6px;background:#fff;cursor:pointer;font:inherit}.sheetwrap{max-width:860px;margin:0 auto;overflow-x:auto}@media print{body{background:#fff;padding:0}.bar{display:none}.bl{border:0;padding:0}}';
+  function billDoc(b, shop) {
+    return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>' +
+      esc(b.number) + ' - ' + esc(shop.name) + '</title><style>' + $('billCss').textContent + DL_CSS + '</style></head><body><div class="bar"><button onclick="window.print()">Print</button></div><div class="sheetwrap">' +
+      billSheet(b, shop) + '</div></body></html>';
+  }
+
+  /* ---------- dialogs ---------- */
+  var lastFocus = null, currentBill = null;
+  function openModal(html, wide) {
+    lastFocus = document.activeElement;
+    var box = $('modalBox');
+    box.className = 'modal' + (wide ? ' wide' : '');
+    box.innerHTML = html;
+    $('modal').hidden = false;
+    document.body.classList.add('modal-open');
+    box.focus();
+  }
+  function closeModal() {
+    $('modal').hidden = true;
+    $('modalBox').innerHTML = '';
+    document.body.classList.remove('modal-open');
+    currentBill = null;
+    if (lastFocus && lastFocus.focus) { try { lastFocus.focus(); } catch (e) {} }
+    lastFocus = null;
+  }
+  function openBill(b) {
+    currentBill = b;
+    openModal('<div class="modal-bar no-print"><h2 id="modalTitle">Bill ' + esc(b.number) + '</h2><div class="modal-btns">' +
+      '<button class="btn primary" type="button" data-m="download">Download bill</button>' +
+      '<button class="btn" type="button" data-m="copy">Copy for WhatsApp</button>' +
+      (window.__offline ? '<button class="btn" type="button" data-m="print">Print</button>' : '') +
+      '<button class="btn" type="button" data-m="close">Close</button></div></div>' +
+      '<textarea class="copybox no-print" id="copyBox" rows="9" readonly aria-label="Bill text to copy" hidden></textarea>' +
+      '<div class="sheetwrap">' + billSheet(b, state.shop) + '</div>', true);
+  }
+  function openShopForm() {
+    var s = state.shop, dis = state.canWrite ? '' : ' disabled';
+    openModal('<div class="modal-bar"><h2 id="modalTitle">Shop details</h2></div>' +
+      '<p class="muted">These appear at the top of every bill.</p>' +
+      '<form id="shopForm" autocomplete="off"><fieldset' + dis + ' class="shop-grid">' +
+      '<div><label for="sh-name">Shop name</label><input id="sh-name" required maxlength="80" value="' + esc(s.name) + '"></div>' +
+      '<div><label for="sh-addr">Address</label><input id="sh-addr" maxlength="200" value="' + esc(s.address) + '" placeholder="Shop address for the bill header"></div>' +
+      '<div><label for="sh-phone">Phone</label><input id="sh-phone" type="tel" maxlength="40" value="' + esc(s.phone) + '" placeholder="e.g. 98765 43210"></div>' +
+      '<div><label for="sh-gstin">GSTIN (optional)</label><input id="sh-gstin" maxlength="20" value="' + esc(s.gstin) + '" placeholder="15-character GST number"></div>' +
+      '<div><label for="sh-note">Bill footer note</label><input id="sh-note" maxlength="120" value="' + esc(s.note) + '"></div>' +
+      '</fieldset><p class="form-msg" id="shopMsg" role="alert"></p>' +
+      '<div class="modal-btns"><button class="btn primary" type="submit"' + dis + '>Save</button><button class="btn" type="button" data-m="close">Cancel</button></div></form>');
+  }
+
+  function render() {
+    renderStatus(); renderBrand(); renderView(); renderTiles(); renderCategories(); renderTable();
+    var rows = visibleSales();
+    renderSalesTiles(rows); renderSalesTable(rows); renderSaleSelect();
+    renderBillsTable(); renderDraft();
+    var prows = visiblePurchases();
+    renderPurchasesTiles(prows); renderPurchasesTable(prows); renderPurchaseSelect();
+    $('formset').disabled = !state.canWrite;
+    $('saleset').disabled = !state.canWrite;
+    $('purchaseset').disabled = !state.canWrite;
+  }
+
+  /* ---------- changing stock ---------- */
+  function bump(id, delta) {
+    var it = state.items.find(function (x) { return x.id === id; });
+    if (!it) return;
+    var cur = stockOf(it), next = Math.max(0, cur + delta);
+    if (next === cur) return;
+    if (!state.db) { it.stock = next; render(); return; }
+    dirty.set(id, next);
+    render();
+    clearTimeout(timers.get(id));
+    timers.set(id, setTimeout(function () { flush(id); }, 300));
+  }
+  function flush(id) {
+    if (inflight.has(id)) { timers.set(id, setTimeout(function () { flush(id); }, 150)); return; }
+    if (!dirty.has(id)) return;
+    var val = dirty.get(id);
+    inflight.add(id);
+    state.db.collection('items').doc(id).update({ stock: val }).then(function () {
+      var it = state.items.find(function (x) { return x.id === id; });
+      if (it) it.stock = val;
+      if (dirty.get(id) === val) dirty.delete(id);
+    }, function (err) {
+      dirty.delete(id);
+      toast(writeMsg(err));
+    }).then(function () {
+      inflight.delete(id);
+      render();
+    });
+  }
+  function removeItem(id) {
+    state.confirmId = null;
+    var it = state.items.find(function (x) { return x.id === id; });
+    var name = it ? it.name : 'Item';
+    if (!state.db) {
+      state.items = state.items.filter(function (x) { return x.id !== id; });
+      render(); toast('Removed ' + name); return;
+    }
+    dirty.delete(id);
+    state.db.collection('items').doc(id).delete().then(function () {
+      state.items = state.items.filter(function (x) { return x.id !== id; });
+      render(); toast('Removed ' + name);
+    }, function (err) { toast(writeMsg(err)); render(); });
+  }
+
+  /* ---------- events ---------- */
+  $('rows').addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-act]');
+    if (!btn) return;
+    var act = btn.getAttribute('data-act');
+    if (act === 'clear') {
+      state.q = ''; state.cat = ''; state.lowOnly = false;
+      $('q').value = ''; $('cat').value = ''; $('lowOnly').setAttribute('aria-pressed', 'false');
+      renderTable(); return;
+    }
+    if (!state.canWrite) return;
+    var tr = btn.closest('tr'); if (!tr) return;
+    var id = tr.getAttribute('data-id'), step = e.shiftKey ? 10 : 1;
+    focusAfter = { id: id, act: act };
+    if (act === 'inc') bump(id, step);
+    else if (act === 'dec') bump(id, -step);
+    else if (act === 'rm') {
+      if (state.confirmId === id) { removeItem(id); return; }
+      state.confirmId = id;
+      clearTimeout(confirmTimer);
+      confirmTimer = setTimeout(function () { state.confirmId = null; renderTable(); }, 3500);
+      renderTable();
+    }
+  });
+
+  $('q').addEventListener('input', function (e) { state.q = e.target.value; renderTable(); });
+  $('cat').addEventListener('change', function (e) { state.cat = e.target.value; renderTable(); });
+  $('lowOnly').addEventListener('click', function (e) {
+    state.lowOnly = !state.lowOnly;
+    e.currentTarget.setAttribute('aria-pressed', String(state.lowOnly));
+    renderTable();
+  });
+  document.querySelector('thead').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-sort]'); if (!b) return;
+    var k = b.getAttribute('data-sort');
+    if (state.sort.key === k) state.sort.dir = -state.sort.dir; else state.sort = { key: k, dir: 1 };
+    renderTable();
+  });
+
+  $('addForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var msg = $('formMsg'); msg.textContent = '';
+    if (!state.canWrite) return;
+    if (!state.ready) { msg.textContent = 'Still connecting. Try again in a moment.'; return; }
+    var name = $('f-name').value.trim(), sku = $('f-sku').value.trim(), cat = $('f-cat').value.trim();
+    var stock = Number($('f-stock').value), reorder = Number($('f-reorder').value), price = Number($('f-price').value);
+    if (!name || !sku || !cat) { msg.textContent = 'Name, SKU and category are required.'; return; }
+    if (!Number.isInteger(stock) || stock < 0 || !Number.isInteger(reorder) || reorder < 0) { msg.textContent = 'Stock and reorder level must be whole numbers, 0 or more.'; return; }
+    if (!isFinite(price) || price < 0) { msg.textContent = 'Unit price must be 0 or more.'; return; }
+    if (state.items.some(function (i) { return i.sku.toLowerCase() === sku.toLowerCase(); })) {
+      msg.textContent = 'SKU ' + sku + ' already exists. Use a different SKU.'; return;
+    }
+    var known = state.items.find(function (i) { return i.category.toLowerCase() === cat.toLowerCase(); });
+    if (known) cat = known.category;
+    var item = { name: name, sku: sku, category: cat, stock: stock, reorder: reorder, price: Math.round(price * 100) / 100, createdAt: Date.now() };
+    var btn = $('addBtn'); btn.disabled = true;
+    var done = function () {
+      $('addForm').reset(); $('f-name').focus(); toast('Added ' + name);
+    };
+    if (!state.db) {
+      state.items.push(normalize('m' + (++memSeq), item));
+      render(); done(); btn.disabled = false;
+    } else {
+      state.db.collection('items').add(item).then(done, function (err) { msg.textContent = writeMsg(err); })
+        .then(function () { btn.disabled = false; });
+    }
+  });
+
+  /* ---------- sales: tabs, filters, record, void ---------- */
+  var confirmSaleTimer = null;
+
+  function setView(v) {
+    state.view = (v === 'sales' || v === 'purchases') ? v : 'inventory';
+    try { if (location.hash !== '#' + state.view) location.hash = state.view; } catch (err) {}
+    render();
+  }
+  document.querySelector('.tabs').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-go]');
+    if (b) setView(b.getAttribute('data-go'));
+  });
+  window.addEventListener('hashchange', function () {
+    var v = location.hash.replace('#', '');
+    if (v === 'sales' || v === 'purchases' || v === 'inventory') { state.view = v; render(); }
+  });
+
+  $('sq').addEventListener('input', function (e) { state.sq = e.target.value; render(); });
+  $('period').addEventListener('change', function (e) { state.period = e.target.value; render(); });
+  $('salesHead').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-ssort]'); if (!b) return;
+    var k = b.getAttribute('data-ssort');
+    if (state.ssort.key === k) state.ssort.dir = -state.ssort.dir;
+    else state.ssort = { key: k, dir: (k === 'date' || typeof (state.sales[0] || {})[k] === 'number') ? -1 : 1 };
+    render();
+  });
+  $('s-item').addEventListener('change', function () { syncSalePrice(true); });
+
+  function voidSale(id) {
+    state.confirmSaleId = null;
+    var s = state.sales.find(function (x) { return x.id === id; });
+    if (!s) return;
+    var done = function () {
+      state.sales = state.sales.filter(function (x) { return x.id !== id; });
+      if (!s.sample && state.items.some(function (i) { return i.id === s.itemId; })) {
+        bump(s.itemId, s.qty);
+        toast('Sale voided. ' + NUM.format(s.qty) + ' returned to stock.');
+      } else {
+        toast('Sale voided.');
+      }
+      render();
+    };
+    if (!state.db) { done(); return; }
+    state.db.collection('sales').doc(id).delete().then(done, function (err) { toast(writeMsg(err)); render(); });
+  }
+
+  $('salesRows').addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-act]'); if (!btn) return;
+    var act = btn.getAttribute('data-act');
+    if (act === 'sclear') {
+      state.sq = ''; state.period = 'all'; $('sq').value = ''; $('period').value = 'all';
+      render(); return;
+    }
+    if (act === 'viewbill') {
+      var vb = state.bills.find(function (x) { return x.id === btn.getAttribute('data-bill'); });
+      if (vb) openBill(vb);
+      return;
+    }
+    if (act !== 'void' || !state.canWrite) return;
+    var id = btn.closest('tr').getAttribute('data-id');
+    if (state.confirmSaleId === id) { voidSale(id); return; }
+    state.confirmSaleId = id;
+    clearTimeout(confirmSaleTimer);
+    confirmSaleTimer = setTimeout(function () { state.confirmSaleId = null; renderSalesTable(visibleSales()); }, 3500);
+    renderSalesTable(visibleSales());
+  });
+
+  /* ---------- billing ---------- */
+  function addLine(e) {
+    e.preventDefault();
+    var msg = $('saleMsg'); msg.textContent = '';
+    if (!state.canWrite) return;
+    var it = state.items.find(function (x) { return x.id === $('s-item').value; });
+    if (!it) { msg.textContent = 'Choose a product to add. Add products on the Inventory tab first.'; return; }
+    var qty = Number($('s-qty').value), price = Number($('s-price').value);
+    if (!Number.isInteger(qty) || qty < 1) { msg.textContent = 'Quantity must be a whole number, 1 or more.'; return; }
+    if ($('s-price').value === '' || !isFinite(price) || price < 0) { msg.textContent = 'Enter the rate, 0 or more.'; return; }
+    var existing = draft.find(function (l) { return l.itemId === it.id; });
+    var total = qty + (existing ? existing.qty : 0), avail = stockOf(it);
+    if (total > avail) {
+      msg.textContent = 'Only ' + NUM.format(avail) + ' of ' + it.name + ' in stock' + (existing ? ' (' + NUM.format(existing.qty) + ' already on this bill).' : '.');
+      return;
+    }
+    if (existing) { existing.qty = total; existing.price = r2(price); }
+    else draft.push({ itemId: it.id, qty: qty, price: r2(price) });
+    $('s-qty').value = 1;
+    syncSalePrice(true);
+    renderDraft();
+    $('s-item').focus();
+  }
+  $('saleForm').addEventListener('submit', addLine);
+  $('s-disc').addEventListener('input', renderDraft);
+  $('s-gst').addEventListener('change', renderDraft);
+  $('billLines').addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-act="rmline"]'); if (!btn) return;
+    var id = btn.closest('tr').getAttribute('data-item');
+    draft = draft.filter(function (l) { return l.itemId !== id; });
+    renderDraft();
+  });
+
+  function resetBillForm() {
+    draft = [];
+    ['s-cust', 's-phone', 's-addr', 's-disc'].forEach(function (id) { $(id).value = ''; });
+    $('s-gst').value = '0'; $('s-pay').selectedIndex = 0; $('s-qty').value = 1;
+    $('s-date').value = dayStamp(0);
+    syncSalePrice(true);
+    renderDraft();
+  }
+  $('clearBillBtn').addEventListener('click', function () { $('saleMsg').textContent = ''; resetBillForm(); });
+
+  function saveBill() {
+    var msg = $('saleMsg'); msg.textContent = '';
+    if (!state.canWrite) return;
+    if (!state.ready) { msg.textContent = 'Still connecting. Try again in a moment.'; return; }
+    var rows = draft.map(function (l) { return { l: l, it: state.items.find(function (i) { return i.id === l.itemId; }) }; })
+      .filter(function (x) { return x.it; });
+    if (!rows.length) { msg.textContent = 'Add at least one item to the bill.'; return; }
+    for (var k = 0; k < rows.length; k++) {
+      var av = stockOf(rows[k].it);
+      if (rows[k].l.qty > av) { msg.textContent = 'Only ' + NUM.format(av) + ' of ' + rows[k].it.name + ' in stock. Lower the quantity or remove it.'; return; }
+    }
+    var grossList = rows.map(function (x) { return r2(x.l.qty * x.l.price); });
+    var subtotal = calcBill(grossList, 0, 0).subtotal, disc = draftDiscount();
+    if (!isFinite(disc) || disc < 0) { msg.textContent = 'Discount must be 0 or more.'; return; }
+    if (disc > subtotal) { msg.textContent = 'Discount cannot be more than the bill amount (' + INR.format(subtotal) + ').'; return; }
+    var calc = calcBill(grossList, disc, draftRate());
+    var shares = splitDiscount(grossList, calc.discount);
+    var number = nextBillNo(state.bills, shopPrefix(state.shop.name));
+    var date = $('s-date').value || dayStamp(0);
+    var customer = $('s-cust').value.trim(), now = Date.now();
+    var lines = rows.map(function (x, i) {
+      return { itemId: x.it.id, name: x.it.name, sku: x.it.sku, qty: x.l.qty, price: x.l.price, gross: grossList[i], discount: shares[i], total: r2(grossList[i] - shares[i]) };
+    });
+    var bill = {
+      number: number, date: date, customer: customer, phone: $('s-phone').value.trim(), address: $('s-addr').value.trim(), payment: $('s-pay').value,
+      lines: lines, subtotal: calc.subtotal, discount: calc.discount, gstRate: calc.gstRate, gst: calc.gst, total: calc.total, createdAt: now
+    };
+    var saleDocs = lines.map(function (ln, i) {
+      return { itemId: ln.itemId, name: ln.name, sku: ln.sku, category: rows[i].it.category, qty: ln.qty, price: ln.price, gross: ln.gross,
+        discount: ln.discount, total: ln.total, date: date, customer: customer, billNo: number, createdAt: now + i };
+    });
+    var btn = $('saleBtn'); btn.disabled = true;
+    var finish = function (billId) {
+      rows.forEach(function (x) { bump(x.it.id, -x.l.qty); });
+      var low = rows.filter(function (x) { return stockOf(x.it) < x.it.reorder; }).length;
+      resetBillForm();
+      toast('Bill ' + number + ' saved. Stock updated' + (low ? ', ' + low + ' item' + (low > 1 ? 's' : '') + ' now low.' : '.'));
+      openBill(normalizeBill(billId, bill));
+    };
+    if (!state.db) {
+      var id = 'm' + (++memSeq);
+      state.bills.push(normalizeBill(id, bill));
+      saleDocs.forEach(function (s) { s.billId = id; state.sales.push(normalizeSale('m' + (++memSeq), s)); });
+      finish(id); btn.disabled = false;
+      return;
+    }
+    var bref = state.db.collection('bills').doc(), srefs = [];
+    bref.set(bill).then(function () {
+      return Promise.all(saleDocs.map(function (s) {
+        s.billId = bref.id;
+        var r = state.db.collection('sales').doc(); srefs.push(r);
+        return r.set(s);
+      }));
+    }).then(function () { finish(bref.id); }, function (err) {
+      msg.textContent = writeMsg(err);
+      srefs.concat([bref]).forEach(function (r) { r.delete().catch(function () {}); });
+    }).then(function () { btn.disabled = false; });
+  }
+  $('saleBtn').addEventListener('click', saveBill);
+
+  function voidBill(id) {
+    state.confirmBillId = null;
+    var b = state.bills.find(function (x) { return x.id === id; });
+    if (!b) return;
+    var done = function () {
+      state.bills = state.bills.filter(function (x) { return x.id !== id; });
+      state.sales = state.sales.filter(function (s) { return s.billId !== id; });
+      b.lines.forEach(function (l) { if (state.items.some(function (i) { return i.id === l.itemId; })) bump(l.itemId, l.qty); });
+      toast('Bill ' + b.number + ' voided. Stock returned.');
+      render();
+    };
+    if (!state.db) { done(); return; }
+    var ops = [state.db.collection('bills').doc(id).delete()].concat(state.sales.filter(function (s) { return s.billId === id; })
+      .map(function (s) { return state.db.collection('sales').doc(s.id).delete(); }));
+    Promise.all(ops).then(done, function (err) { toast(writeMsg(err)); render(); });
+  }
+
+  var confirmBillTimer = null;
+  $('bq').addEventListener('input', function (e) { state.bq = e.target.value; renderBillsTable(); });
+  $('billsRows').addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-act]'); if (!btn) return;
+    var act = btn.getAttribute('data-act'), id = btn.closest('tr').getAttribute('data-id');
+    var b = state.bills.find(function (x) { return x.id === id; });
+    if (act === 'viewbill' && b) { openBill(b); return; }
+    if (act !== 'voidbill' || !state.canWrite) return;
+    if (state.confirmBillId === id) { voidBill(id); return; }
+    state.confirmBillId = id;
+    clearTimeout(confirmBillTimer);
+    confirmBillTimer = setTimeout(function () { state.confirmBillId = null; renderBillsTable(); }, 3500);
+    renderBillsTable();
+  });
+
+  $('shopBtn').addEventListener('click', openShopForm);
+  $('modal').addEventListener('click', function (e) {
+    if (e.target === $('modal')) { closeModal(); return; }
+    var b = e.target.closest('[data-m]'); if (!b) return;
+    var m = b.getAttribute('data-m');
+    if (m === 'close') { closeModal(); return; }
+    if (!currentBill) return;
+    if (m === 'print') { window.print(); return; }
+    if (m === 'download') {
+      var name = currentBill.number + '.html';
+      var use = window.claude && window.claude.use ? window.claude.use('downloads') : Promise.resolve(null);
+      use.then(function (dl) {
+        if (!dl) { toast('Downloads are not available here. Use Copy for WhatsApp instead.'); return; }
+        return dl.save({ filename: name, data: billDoc(currentBill, state.shop) }).then(function () { toast('Saved ' + name + '. Open it to print.'); },
+          function (err) { if (!err || err.code !== 'declined') toast('Could not save the bill file.'); });
+      }, function () { toast('Could not save the bill file.'); });
+      return;
+    }
+    if (m === 'copy') {
+      var text = billText(currentBill, state.shop), box = $('copyBox');
+      var showBox = function () { box.value = text; box.hidden = false; box.focus(); box.select(); toast('Select and copy the text below.'); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { toast('Bill copied. Paste it into WhatsApp.'); }, showBox);
+      else showBox();
+    }
+  });
+  $('modal').addEventListener('submit', function (e) {
+    if (e.target.id !== 'shopForm') return;
+    e.preventDefault();
+    if (!state.canWrite) return;
+    var shop = normalizeShop({ name: $('sh-name').value, address: $('sh-addr').value.trim(), phone: $('sh-phone').value.trim(), gstin: $('sh-gstin').value.trim().toUpperCase(), note: $('sh-note').value.trim() });
+    var done = function () { state.shop = shop; closeModal(); render(); toast('Shop details saved.'); };
+    if (!state.db) { done(); return; }
+    state.db.collection('settings').doc('shop').set(shop).then(done, function (err) { $('shopMsg').textContent = writeMsg(err); });
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('modal').hidden) closeModal(); });
+
+  /* ---------- purchases: filters, record, void ---------- */
+  var confirmPurchaseTimer = null;
+
+  $('pq').addEventListener('input', function (e) { state.pq = e.target.value; render(); });
+  $('pperiod').addEventListener('change', function (e) { state.pperiod = e.target.value; render(); });
+  $('purchasesHead').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-psort]'); if (!b) return;
+    var k = b.getAttribute('data-psort');
+    if (state.psort.key === k) state.psort.dir = -state.psort.dir;
+    else state.psort = { key: k, dir: (k === 'date' || typeof (state.purchases[0] || {})[k] === 'number') ? -1 : 1 };
+    render();
+  });
+  $('p-item').addEventListener('change', function () { syncPurchaseCost(true); });
+
+  function voidPurchase(id) {
+    state.confirmPurchaseId = null;
+    var p = state.purchases.find(function (x) { return x.id === id; });
+    if (!p) return;
+    var done = function () {
+      state.purchases = state.purchases.filter(function (x) { return x.id !== id; });
+      var it = state.items.find(function (i) { return i.id === p.itemId; });
+      if (!p.sample && it) {
+        var cur = stockOf(it);
+        bump(p.itemId, -p.qty);
+        toast(cur < p.qty ? 'Purchase voided. Stock set to 0.' : 'Purchase voided. ' + NUM.format(p.qty) + ' removed from stock.');
+      } else {
+        toast('Purchase voided.');
+      }
+      render();
+    };
+    if (!state.db) { done(); return; }
+    state.db.collection('purchases').doc(id).delete().then(done, function (err) { toast(writeMsg(err)); render(); });
+  }
+
+  $('purchasesRows').addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-act]'); if (!btn) return;
+    var act = btn.getAttribute('data-act');
+    if (act === 'pclear') {
+      state.pq = ''; state.pperiod = 'all'; $('pq').value = ''; $('pperiod').value = 'all';
+      render(); return;
+    }
+    if (act !== 'pvoid' || !state.canWrite) return;
+    var id = btn.closest('tr').getAttribute('data-id');
+    if (state.confirmPurchaseId === id) { voidPurchase(id); return; }
+    state.confirmPurchaseId = id;
+    clearTimeout(confirmPurchaseTimer);
+    confirmPurchaseTimer = setTimeout(function () { state.confirmPurchaseId = null; renderPurchasesTable(visiblePurchases()); }, 3500);
+    renderPurchasesTable(visiblePurchases());
+  });
+
+  $('purchaseForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var msg = $('purchaseMsg'); msg.textContent = '';
+    if (!state.canWrite) return;
+    if (!state.ready) { msg.textContent = 'Still connecting. Try again in a moment.'; return; }
+    var it = state.items.find(function (x) { return x.id === $('p-item').value; });
+    if (!it) { msg.textContent = 'Choose a product. Add products on the Inventory tab first.'; return; }
+    var qty = Number($('p-qty').value), cost = Number($('p-cost').value);
+    var date = $('p-date').value || dayStamp(0), sup = $('p-sup').value.trim();
+    if (!Number.isInteger(qty) || qty < 1) { msg.textContent = 'Quantity must be a whole number, 1 or more.'; return; }
+    if (!isFinite(cost) || cost < 0 || $('p-cost').value === '') { msg.textContent = 'Enter the unit cost, 0 or more.'; return; }
+    var before = stockOf(it);
+    var purchase = {
+      itemId: it.id, name: it.name, sku: it.sku, category: it.category,
+      qty: qty, cost: r2(cost), total: r2(qty * cost), date: date, supplier: sup, createdAt: Date.now()
+    };
+    var btn = $('purchaseBtn'); btn.disabled = true;
+    var finish = function () {
+      $('purchaseForm').reset();
+      $('p-date').value = dayStamp(0);
+      bump(it.id, qty);
+      syncPurchaseCost(true);
+      var back = before < it.reorder && before + qty >= it.reorder;
+      toast('Purchase recorded: +' + NUM.format(qty) + ' × ' + it.name + (back ? '. Back above its reorder level.' : '.'));
+    };
+    if (!state.db) {
+      state.purchases.push(normalizePurchase('m' + (++memSeq), purchase));
+      finish(); btn.disabled = false;
+    } else {
+      state.db.collection('purchases').add(purchase).then(finish, function (err) { msg.textContent = writeMsg(err); })
+        .then(function () { btn.disabled = false; });
+    }
+  });
+
+  /* ---------- CSV export ---------- */
+  function csvCell(v, isText) {
+    var s = String(v);
+    if (isText && /^[=+\-@\t\r]/.test(s)) s = "'" + s;
+    return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+  function buildCsv(rows) {
+    var head = ['Product Name', 'SKU', 'Category', 'Current Stock', 'Reorder Level', 'Unit Price', 'Status'];
+    var lines = [head.join(',')].concat(rows.map(function (it) {
+      return [csvCell(it.name, true), csvCell(it.sku, true), csvCell(it.category, true),
+        stockOf(it), it.reorder, it.price.toFixed(2), isLow(it) ? 'Low Stock' : 'OK'].join(',');
+    }));
+    return '﻿' + lines.join('\r\n') + '\r\n';
+  }
+  function buildPurchasesCsv(rows) {
+    var head = ['Date', 'Product Name', 'SKU', 'Supplier', 'Quantity', 'Unit Cost', 'Total'];
+    var lines = [head.join(',')].concat(rows.map(function (p) {
+      return [p.date, csvCell(p.name, true), csvCell(p.sku, true), csvCell(p.supplier, true),
+        p.qty, p.cost.toFixed(2), p.total.toFixed(2)].join(',');
+    }));
+    return '﻿' + lines.join('\r\n') + '\r\n';
+  }
+  function buildSalesCsv(rows) {
+    var head = ['Date', 'Bill No', 'Product Name', 'SKU', 'Customer', 'Quantity', 'Unit Price', 'Discount', 'Total'];
+    var lines = [head.join(',')].concat(rows.map(function (s) {
+      return [s.date, csvCell(s.billNo, true), csvCell(s.name, true), csvCell(s.sku, true), csvCell(s.customer, true),
+        s.qty, s.price.toFixed(2), s.discount.toFixed(2), s.total.toFixed(2)].join(',');
+    }));
+    return '﻿' + lines.join('\r\n') + '\r\n';
+  }
+  function todayStamp() {
+    var d = new Date(), p = function (n) { return String(n).padStart(2, '0'); };
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+  }
+  function copyFallback(csv) {
+    var copied = navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(csv) : Promise.reject();
+    copied.then(function () { toast('Downloads are not available here. CSV copied to your clipboard.'); },
+      function () { toast('Could not save or copy the CSV in this view.'); });
+  }
+  $('exportBtn').addEventListener('click', function () {
+    var v = state.view;
+    var rows = v === 'sales' ? visibleSales() : v === 'purchases' ? visiblePurchases() : visibleItems();
+    if (!rows.length) { toast('There is nothing to export yet.'); return; }
+    var csv = v === 'sales' ? buildSalesCsv(rows) : v === 'purchases' ? buildPurchasesCsv(rows) : buildCsv(rows);
+    var filename = (v === 'sales' ? 'sales-' : v === 'purchases' ? 'purchases-' : 'inventory-') + todayStamp() + '.csv';
+    var use = window.claude && window.claude.use ? window.claude.use('downloads') : Promise.resolve(null);
+    use.then(function (dl) {
+      if (!dl) { copyFallback(csv); return; }
+      return dl.save({ filename: filename, data: csv }).then(function () {
+        toast('Saved ' + filename);
+      }, function (err) {
+        if (err && err.code === 'declined') return;
+        copyFallback(csv);
+      });
+    }, function () { copyFallback(csv); });
+  });
+
+  /* ---------- start ---------- */
+  if (location.hash === '#sales') state.view = 'sales';
+  else if (location.hash === '#purchases') state.view = 'purchases';
+  $('s-date').value = dayStamp(0);
+  $('p-date').value = dayStamp(0);
+  render();
+
+  function useCap(name) {
+    try { return window.claude && window.claude.use ? window.claude.use(name) : Promise.resolve(null); }
+    catch (e) { return Promise.resolve(null); }
+  }
+
+  useCap('user').then(function (user) {
+    if (!user || !user.can) return;
+    return Promise.resolve(user.can('data.write')).then(function (ok) {
+      if (ok === false) { state.canWrite = false; render(); }
+    });
+  }).catch(function () {});
+
+  useCap('db').then(function (db) {
+    if (!db) {
+      state.db = null; state.mode = 'local'; state.ready = true; state.loaded = true; state.salesLoaded = true; state.purchasesLoaded = true; state.billsLoaded = true;
+      render(); return;
+    }
+    state.db = db; state.ready = true;
+    var slow = setTimeout(function () { if (!state.loaded) { state.mode = 'slow'; renderStatus(); } }, 10000);
+    db.collection('items').onSnapshot(function (snap) {
+      state.items = snap.docs.map(function (d) { return normalize(d.id, d.data() || {}); });
+      if (!snap.metadata.fromCache) { state.loaded = true; state.mode = 'saved'; clearTimeout(slow); }
+      render();
+    }, function () {
+      clearTimeout(slow); state.loaded = true; state.mode = 'error'; render();
+    });
+    db.collection('sales').onSnapshot(function (snap) {
+      state.sales = snap.docs.map(function (d) { return normalizeSale(d.id, d.data() || {}); });
+      if (!snap.metadata.fromCache) state.salesLoaded = true;
+      render();
+    }, function () { state.salesLoaded = true; render(); });
+    db.collection('purchases').onSnapshot(function (snap) {
+      state.purchases = snap.docs.map(function (d) { return normalizePurchase(d.id, d.data() || {}); });
+      if (!snap.metadata.fromCache) state.purchasesLoaded = true;
+      render();
+    }, function () { state.purchasesLoaded = true; render(); });
+    db.collection('bills').onSnapshot(function (snap) {
+      state.bills = snap.docs.map(function (d) { return normalizeBill(d.id, d.data() || {}); });
+      if (!snap.metadata.fromCache) state.billsLoaded = true;
+      render();
+    }, function () { state.billsLoaded = true; render(); });
+    db.collection('settings').onSnapshot(function (snap) {
+      var d = snap.docs.find(function (x) { return x.id === 'shop'; });
+      state.shop = normalizeShop(d ? d.data() : null);
+      render();
+    }, function () {});
+  }, function () { state.mode = 'local'; state.ready = true; state.loaded = true; state.salesLoaded = true; state.purchasesLoaded = true; state.billsLoaded = true; render(); });
+})();
+</script>
+
+<script>
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+  window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+}
+</script>
+</body>
+</html>
